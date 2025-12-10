@@ -1,2 +1,18 @@
-npm run dev
+# 1️⃣ Crée le projet (si ce n’est pas encore fait)
+npm create vite@latest mon-app -- --template react-ts
+cd mon-app
+npm install
+
+# 2️⃣ Installe Tailwind et ses dépendances
+npm install -D tailwindcss postcss autoprefixer
+
+# 3️⃣ Crée le fichier de config (npm ≥ 7)
+npm exec tailwindcss init -p
+# ou, si tu préfères le faire à la main :
+# echo "module.exports = { content: ['./index.html','./src/**/*.{js,ts,jsx,tsx}'], theme: { extend: {} }, plugins: [], }" > tailwind.config.js
+
+# 4️⃣ Ajoute les imports dans src/index.css (ou src/main.css)
+echo -e "@tailwind base;\n@tailwind components;\n@tailwind utilities;" > src/index.css
+
+# 5️⃣ Lance le serveur
 npm run dev

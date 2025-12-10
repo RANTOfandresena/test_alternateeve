@@ -1,6 +1,3 @@
-import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from './hooks/hooks';
-import { loginUser, logout } from './features/authSlice';
 
 function App() {
 
