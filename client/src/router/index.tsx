@@ -1,17 +1,44 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from '../pages/Login';
 import RegisterPage from '../pages/Register';
+import HomePageEmploye from '../pages/employe/Home';
+import HomePageManager from '../pages/manager/Home';
+import { useAppSelector } from '../hooks/hooks';
+import RouteGuard from '../components/RouteGuard';
 
 const AppRouter = () => {
+  const { isLoggedIn,isPageManager } = useAppSelector((state) => state.auth);
+
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route
+        path="/"
+        element={
+          <RouteGuard isAllowed={isLoggedIn} redirectTo="/login">
+            {isPageManager ? <HomePageManager/> : <HomePageEmploye />}
+          </RouteGuard>
+        }
+      />
+      <Route path="/home" element={<Navigate to="/" replace />} /> 
+      <Route
+        path="/login"
+        element={
+          <RouteGuard isAllowed={!isLoggedIn} redirectTo="/">
+            <LoginPage />
+          </RouteGuard>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <RouteGuard isAllowed={!isLoggedIn} redirectTo="/">
+            <RegisterPage />
+          </RouteGuard>
+        }
+      />
+      <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} />
     </Routes>
   );
 };
 
 export default AppRouter;
-

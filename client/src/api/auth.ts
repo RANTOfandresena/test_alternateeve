@@ -1,4 +1,5 @@
 import api from './axiosInstance';
+import {type UserInfo } from '../features/authSlice'
 
 export interface LoginPayload {
   email: string;
@@ -7,11 +8,7 @@ export interface LoginPayload {
 
 export interface LoginResponse {
   token: string;
-  user: {
-    id: string;
-    nom: string;
-    email: string;
-  };
+  user: UserInfo;
 }
 
 export const login = async (payload: LoginPayload) => {

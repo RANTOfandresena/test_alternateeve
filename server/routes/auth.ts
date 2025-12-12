@@ -52,23 +52,6 @@ router.post('/register', async (req: Request, res: Response) => {
     res.status(400).json({ message: err.message });
   }
 });
-
-router.post('/login', async (req: Request, res: Response) => {
-  try {
-    const { email, motDePasse } = req.body;
-    const utilisateur = await Utilisateur.findOne({ email });
-    if (!utilisateur) return res.status(400).json({ message: 'Email ou mot de passe incorrect' });
-
-    const isMatch = await utilisateur.comparePassword(motDePasse);
-    if (!isMatch) return res.status(400).json({ message: 'Email ou mot de passe incorrect' });
-
-    const token = jwt.sign({ id: utilisateur._id }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ token, user: { id: utilisateur._id, nom: utilisateur.nom, email: utilisateur.email } });
-  } catch (err: any) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 /**
  * @swagger
  * /auth/login:
@@ -96,5 +79,21 @@ router.post('/login', async (req: Request, res: Response) => {
  *       500:
  *         description: Erreur serveur
  */
+
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, motDePasse } = req.body;
+    const utilisateur = await Utilisateur.findOne({ email });
+    if (!utilisateur) return res.status(400).json({ message: 'Email ou mot de passe incorrect' });
+
+    const isMatch = await utilisateur.comparePassword(motDePasse);
+    if (!isMatch) return res.status(400).json({ message: 'Email ou mot de passe incorrect' });
+
+    const token = jwt.sign({ id: utilisateur._id }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ token, user: { id: utilisateur._id, nom: utilisateur.nom, email: utilisateur.email,role: utilisateur.role } });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 export default router;

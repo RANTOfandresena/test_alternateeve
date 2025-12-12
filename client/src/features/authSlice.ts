@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { login, type LoginPayload, register, type RegisterPayload } from '../api/auth';
 
-interface UserInfo {
+export interface UserInfo {
   id: string;
   nom: string;
   email: string;
+  role: string;
 }
 interface User {
   user: UserInfo;
@@ -13,6 +14,7 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  isPageManager: boolean;
   isLoggedIn: boolean;
   loading: boolean;
   error: string | null;
@@ -21,6 +23,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
+  isPageManager: false,
   isLoggedIn: false,
   loading: false,
   error: null,
@@ -57,10 +60,14 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.isPageManager = false;
       state.isLoggedIn = false;
       state.error = null;
       state.message = null;
     },
+    changePage: (state) => {
+      state.isPageManager = state.user?.user.role === "MANAGER" && !state.isPageManager
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -72,6 +79,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
+        state.isPageManager = action.payload.user.role === "MANAGER"
         state.isLoggedIn = true;
         state.message = null;
       })
@@ -95,5 +103,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, changePage } = authSlice.actions;
 export default authSlice.reducer;
