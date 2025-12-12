@@ -1,21 +1,22 @@
-import { createSlice, createAsyncThunk,type PayloadAction } from '@reduxjs/toolkit';
-import api from '../api/axiosInstance';
-interface UserInfo { 
-    id: string; 
-    name: string;
-    email: string ;
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { login, type LoginPayload, register, type RegisterPayload } from '../api/auth';
+
+interface UserInfo {
+  id: string;
+  nom: string;
+  email: string;
 }
 interface User {
   user: UserInfo;
   token: string;
 }
 
-
 interface AuthState {
   user: User | null;
   isLoggedIn: boolean;
   loading: boolean;
   error: string | null;
+  message: string | null;
 }
 
 const initialState: AuthState = {
@@ -23,16 +24,29 @@ const initialState: AuthState = {
   isLoggedIn: false,
   loading: false,
   error: null,
+  message: null,
 };
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  async (credentials: LoginPayload, { rejectWithValue }) => {
     try {
-      const response = await api.post('/login', credentials);
-      return response.data; 
+      const data = await login(credentials);
+      return data;
     } catch (err: any) {
-      return rejectWithValue(err.response.data?.message || 'Erreur de connexion');
+      return rejectWithValue(err.response?.data?.message || 'Erreur de connexion');
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async (payload: RegisterPayload, { rejectWithValue }) => {
+    try {
+      const { message } = await register(payload);
+      return message;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Erreur lors de l'inscription");
     }
   }
 );
@@ -45,6 +59,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isLoggedIn = false;
       state.error = null;
+      state.message = null;
     },
   },
   extraReducers: (builder) => {
@@ -52,13 +67,28 @@ const authSlice = createSlice({
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.message = null;
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
         state.isLoggedIn = true;
+        state.message = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        state.message = action.payload;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
