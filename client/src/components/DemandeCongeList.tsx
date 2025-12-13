@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { getMesDemandesConge, type DemandeCongeItem } from '../api/demandeConge';
+import { type DemandeCongeItem } from '../api/demandeConge';
 import { formatDate } from '../utils/date';
 
 const statutClasses: Record<DemandeCongeItem['statut'], string> = {
@@ -8,24 +7,13 @@ const statutClasses: Record<DemandeCongeItem['statut'], string> = {
   REFUSE: 'bg-rose-100 text-rose-800 border-rose-200',
 };
 
-const DemandeCongeList = () => {
-  const [items, setItems] = useState<DemandeCongeItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface Props {
+  items: DemandeCongeItem[];
+  loading: boolean;
+  error: string | null;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getMesDemandesConge();
-        setItems(data);
-      } catch (err: any) {
-        setError(err?.response?.data?.message || 'Impossible de récupérer les demandes.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+const DemandeCongeList = ({ items, loading, error }: Props) => {
 
   if (loading) {
     return (

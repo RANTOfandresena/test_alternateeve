@@ -20,6 +20,7 @@ export type DemandeCongeItem = {
   commentaire?: string;
   statut: 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE';
   dateCreation: string;
+  employeId?: string;
 };
 
 export const getMesDemandesConge = async () => {
@@ -31,5 +32,15 @@ export const getAllDemandesConge =  async () => {
   const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/');
   return data;
 }
+
+export const accepterDemandeConge = async (id: string) => {
+  const { data } = await api.patch<DemandeCongeItem>(`/demande-conge/${id}/accepter`);
+  return data;
+};
+
+export const refuserDemandeConge = async (id: string) => {
+  const { data } = await api.patch<DemandeCongeItem>(`/demande-conge/${id}/refuser`);
+  return data;
+};
 
 

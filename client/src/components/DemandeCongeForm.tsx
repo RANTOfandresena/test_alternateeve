@@ -17,41 +17,37 @@ const initialState: LeaveRequestFormState = {
   reason: '',
 };
 
-const DemandeCongeForm = () => {
-  const [form, setForm] = useState<LeaveRequestFormState>(initialState);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface Props {
+  onSubmit: (payload: DemandeCongePayload) => Promise<boolean>;
+}
+
+const DemandeCongeForm = ({ onSubmit }: Props) => {
+  const [form, setForm] = useState(initialState);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-
-    if (form.startDate && form.endDate && new Date(form.startDate) > new Date(form.endDate)) {
-      setError('La date de début doit être antérieure ou égale à la date de fin.');
-      return;
-    }
-
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+
     try {
-      await creerDemandeConge({
+      const response = await onSubmit({
         type: form.type,
         dateDebut: form.startDate,
         dateFin: form.endDate,
         commentaire: form.reason || undefined,
       });
-      setSubmitted(true);
+      setSubmitted(response);
       setForm(initialState);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Impossible de créer la demande pour le moment.');
+    } catch {
+      setError('Erreur lors de la création');
     } finally {
       setLoading(false);
     }
   };
-
   const handleChange = <K extends keyof LeaveRequestFormState>(key: K, value: LeaveRequestFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-    setSubmitted(false);
     setError(null);
   };
 
@@ -140,4 +136,3 @@ const DemandeCongeForm = () => {
 };
 
 export default DemandeCongeForm;
-

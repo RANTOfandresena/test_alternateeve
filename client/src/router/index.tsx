@@ -11,11 +11,30 @@ const AppRouter = () => {
 
   return (
     <Routes>
+
       <Route
         path="/"
         element={
           <RouteGuard isAllowed={isLoggedIn} redirectTo="/login">
-            {isPageManager ? <HomePageManager/> : <HomePageEmploye />}
+            <Navigate to={isPageManager ? "/manager" : "/employe"} replace />
+          </RouteGuard>
+        }
+      />
+
+      <Route
+        path="/manager"
+        element={
+          <RouteGuard isAllowed={isLoggedIn && isPageManager} redirectTo="/">
+            <HomePageManager />
+          </RouteGuard>
+        }
+      />
+
+      <Route
+        path="/employe"
+        element={
+          <RouteGuard isAllowed={isLoggedIn && !isPageManager} redirectTo="/">
+            <HomePageEmploye />
           </RouteGuard>
         }
       />

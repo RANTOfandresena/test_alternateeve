@@ -1,4 +1,4 @@
-import DemandeCongeList from '../../components/DemandeCongeList';
+import ManagerDemandes from '../../components/ManagerDemandes';
 import { useAppSelector } from '../../hooks/hooks';
 
 const HomePage = () => {
@@ -19,7 +19,7 @@ const HomePage = () => {
         </section>
 
         <section className="flex justify-center">
-          <DemandeCongeList />
+          <ManagerDemandes />
         </section>
       </div>
     </div>
