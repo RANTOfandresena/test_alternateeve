@@ -17,7 +17,7 @@ const StatistiquesConge = ({ stats }: StatistiquesCongeProps) => {
       label: 'Jours restants',
       value: stats.joursRestants,
       icon: Calendar,
-      color: 'blue',
+      color: 'bg-blue-100 text-blue-800',
       gradient: 'from-blue-500 to-blue-600',
       bgLight: 'bg-blue-50',
       textColor: 'text-blue-600'
@@ -33,9 +33,9 @@ const StatistiquesConge = ({ stats }: StatistiquesCongeProps) => {
     },
     {
       label: 'En attente',
-      value: stats.demandesEnAttente,
+      color: 'bg-amber-100 text-amber-800',
       icon: Clock,
-      color: 'amber',
+      color: 'bg-green-100 text-green-800',
       gradient: 'from-amber-500 to-amber-600',
       bgLight: 'bg-amber-50',
       textColor: 'text-amber-600'
@@ -52,34 +52,22 @@ const StatistiquesConge = ({ stats }: StatistiquesCongeProps) => {
   ];
 
   return (
-    <div className="w-full max-w-5xl">
-      <div className="flex items-center gap-2 mb-6">
-        <TrendingUp className="w-5 h-5 text-slate-600" />
-        <h2 className="text-xl font-bold text-slate-900">Statistiques de congés</h2>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((card, index) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={index}
-              className="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-              <div className="relative p-6">
-                <div className={`${card.bgLight} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                  <Icon className={`w-6 h-6 ${card.textColor}`} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-600">{card.label}</p>
-                  <p className={`text-3xl font-bold ${card.textColor}`}>{card.value}</p>
-                </div>
-              </div>
-              <div className={`h-1 bg-gradient-to-r ${card.gradient}`} />
+<div className="flex flex-wrap gap-3">
+      {statsCards.map((stat) => {
+        const Icon = stat.icon;
+        return (
+          <div
+            key={stat.label}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${stat.color}`}
+          >
+            <Icon className="w-6 h-6" />
+            <div>
+              <div className="text-sm">{stat.label}</div>
+              <div className="font-semibold">{stat.value}</div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

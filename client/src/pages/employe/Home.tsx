@@ -7,6 +7,7 @@ import StatistiquesConge from '../../components/StatistiquesConge';
 import { useAppSelector } from '../../hooks/hooks';
 import { calculerStatistiques } from '../../utils/statistiquesUtils';
 import Modal from '../../components/elements/Modal';
+import CalendrierConge from '../../components/elements/CalendrierConge';
 
 const HomePage = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -92,7 +93,7 @@ const HomePage = () => {
           <section className="flex justify-center">
             <StatistiquesConge stats={statistiques} />
           </section>
-
+          <CalendrierConge conge={demandes}/>
           {/* Section Liste des demandes */}
           <section className="flex justify-center">
             <DemandeCongeList

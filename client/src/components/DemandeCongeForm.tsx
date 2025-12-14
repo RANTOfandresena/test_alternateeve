@@ -1,19 +1,23 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { creerDemandeConge, type DemandeCongePayload } from '../api/demandeConge';
+import { useAppSelector } from '../hooks/hooks';
+import { DayPicker, getDefaultClassNames, type DateRange } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
+
 
 type LeaveType = DemandeCongePayload['type'];
 
 interface LeaveRequestFormState {
   type: LeaveType;
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   reason: string;
 }
 
 const initialState: LeaveRequestFormState = {
   type: 'VACANCES',
-  startDate: '',
-  endDate: '',
+  startDate: new Date(),
+  endDate: new Date(),
   reason: '',
 };
 
@@ -22,11 +26,24 @@ interface Props {
 }
 
 const DemandeCongeForm = ({ onSubmit }: Props) => {
+  const { user } = useAppSelector((state) => state.auth);
   const [form, setForm] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const defaultClassNames = getDefaultClassNames();
 
+  const demain = new Date();
+  demain.setDate(demain.getDate() + 1);
+  const isJourOuvre = (date: Date) => {
+  const day = date.getDay();
+    return day !== 0 && day !== 6;
+  };
+
+  const estDateValide = (date: Date) =>
+    date >= demain && isJourOuvre(date);
+
+  const [range, setRange] = useState<DateRange | undefined>();
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -34,8 +51,8 @@ const DemandeCongeForm = ({ onSubmit }: Props) => {
     try {
       const response = await onSubmit({
         type: form.type,
-        dateDebut: form.startDate,
-        dateFin: form.endDate,
+        dateDebut: form.startDate.toISOString().split('T')[0],
+        dateFin: form.endDate.toISOString().split('T')[0],
         commentaire: form.reason || undefined,
       });
       setSubmitted(response);
@@ -46,6 +63,12 @@ const DemandeCongeForm = ({ onSubmit }: Props) => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (range?.from && range?.to) {
+      handleChange('startDate', range.from);
+      handleChange('endDate', range.to);
+    }
+  }, [range]);
   const handleChange = <K extends keyof LeaveRequestFormState>(key: K, value: LeaveRequestFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setError(null);
@@ -60,9 +83,9 @@ const DemandeCongeForm = ({ onSubmit }: Props) => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
-          Type de congé
+          Type de congé 
           <select
             value={form.type}
             onChange={(e) => handleChange('type', e.target.value as LeaveType)}
@@ -70,31 +93,20 @@ const DemandeCongeForm = ({ onSubmit }: Props) => {
           >
             <option value="VACANCES">Vacances</option>
             <option value="MALADIE">Maladie</option>
-            <option value="MATERNITE">Maternité</option>
-            <option value="PATERNITE">Paternité</option>
+            {user?.user.genre === "FEMININ" ? <option value="MATERNITE">Maternité</option>:
+            <option value="PATERNITE">Paternité</option>}
             <option value="FAMILIAL">Familial</option>
           </select>
         </label>
 
         <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
-          Date de début
-          <input
-            type="date"
-            required
-            value={form.startDate}
-            onChange={(e) => handleChange('startDate', e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          />
-        </label>
-
-        <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
-          Date de fin
-          <input
-            type="date"
-            required
-            value={form.endDate}
-            onChange={(e) => handleChange('endDate', e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          Date 
+          <DayPicker
+            mode="range"
+            selected={range}
+            onSelect={setRange}
+            disabled={(date) => !estDateValide(date)}
+            numberOfMonths={1}
           />
         </label>
 

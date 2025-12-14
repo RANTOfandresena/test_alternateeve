@@ -1,82 +1,57 @@
-import { Request, Response } from 'express';
-import DemandeConge, { StatutDemande } from '../models/DemandeConge';
+import { Request, Response } from "express";
+import * as DemandeService from "../services/demandeCongeService";
+import { Types } from "mongoose";
 
 export const createDemande = async (req: Request, res: Response) => {
   try {
-    const { type, dateDebut, dateFin, commentaire } = req.body;
     const user = (req as any).user;
 
-    if (!type || !dateDebut || !dateFin) {
-      return res.status(400).json({ message: 'Champs requis manquants' });
-    }
-
-    const demande = new DemandeConge({
-      employeId: user!._id,
-      type,
-      dateDebut,
-      dateFin,
-      commentaire,
-      statut: StatutDemande.EN_ATTENTE,
+    const demande = await DemandeService.creerDemande({
+      employeId: new Types.ObjectId(user._id),
+      ...req.body,
     });
 
-    await demande.save();
     res.status(201).json(demande);
   } catch (err: any) {
-    res.status(500).json({ message: 'Erreur lors de la création de la demande', error: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
 export const getMyDemandes = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const demandes = await DemandeConge.find({ employeId: user!._id }).sort({ dateCreation: -1 });
+    const demandes = await DemandeService.recupererMesDemandes(user._id);
     res.json(demandes);
   } catch (err: any) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des demandes', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
 export const getAllDemandes = async (req: Request, res: Response) => {
   try {
-    const { statut, employeId } = req.query;
-    const filter: any = {};
-    if (statut && Object.values(StatutDemande).includes(statut as any)) {
-      filter.statut = statut;
-    }
-    if (employeId) {
-      filter.employeId = employeId;
-    }
-    const demandes = await DemandeConge.find(filter).sort({ dateCreation: -1 });
+    const demandes = await DemandeService.recupererDemandes(req.query);
     res.json(demandes);
   } catch (err: any) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des demandes', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
 export const accepterDemande = async (req: Request, res: Response) => {
   try {
-    const demande = await DemandeConge.findById(req.params.id);
-    if (!demande) {
-      return res.status(404).json({ message: 'Demande non trouvée' });
-    }
-    demande.statut = StatutDemande.ACCEPTE;
-    await demande.save();
+    const demande = await DemandeService.accepterDemande(req.params.id);
+    if (!demande) return res.status(404).json({ message: "Demande non trouvée" });
     res.json(demande);
   } catch (err: any) {
-    res.status(500).json({ message: "Erreur lors de l'acceptation", error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
 export const refuserDemande = async (req: Request, res: Response) => {
   try {
-    const demande = await DemandeConge.findById(req.params.id);
-    if (!demande) {
-      return res.status(404).json({ message: 'Demande non trouvée' });
-    }
-    demande.statut = StatutDemande.REFUSE;
-    await demande.save();
+    const demande = await DemandeService.refuserDemande(req.params.id);
+    if (!demande) return res.status(404).json({ message: "Demande non trouvée" });
     res.json(demande);
   } catch (err: any) {
-    res.status(500).json({ message: 'Erreur lors du refus', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };

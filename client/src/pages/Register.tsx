@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 const RegisterPage = () => {
   const dispatch = useAppDispatch();
   const { loading, error, message } = useAppSelector((state) => state.auth);
-  const [form, setForm] = useState({ nom: '', email: '', motDePasse: '', role: 'EMPLOYE' });
+  const [form, setForm] = useState({ nom: '', email: '', motDePasse: '',genre:'MASCULIN', role: 'EMPLOYE' });
   const navigate = useNavigate();
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -56,6 +56,17 @@ const RegisterPage = () => {
               placeholder="vous@example.com"
               className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
+          </label>
+          <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
+            Genre
+            <select
+              value={form.genre}
+              onChange={(e) => setForm({ ...form, genre: e.target.value })}
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="MASCULIN">Homme</option>
+              <option value="FEMININ">Femme</option>
+            </select>
           </label>
 
           <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">

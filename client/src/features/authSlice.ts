@@ -5,6 +5,7 @@ export interface UserInfo {
   id: string;
   nom: string;
   email: string;
+  genre: string;
   role: string;
 }
 interface User {

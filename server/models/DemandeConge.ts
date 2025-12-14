@@ -9,22 +9,28 @@ export enum TypeConge {
   FAMILIAL = 'FAMILIAL',
 }
 
-// Enum pour le statut de la demande
 export enum StatutDemande {
-  EN_ATTENTE = 'EN_ATTENTE',
-  ACCEPTE = 'ACCEPTE',
-  REFUSE = 'REFUSE',
+  EN_ATTENTE = "EN_ATTENTE",
+  ACCEPTE = "ACCEPTE",
+  REFUSE = "REFUSE",
 }
 
-export interface IDemandeConge extends Document {
-  employeId: Types.ObjectId;
+
+/** 🔹 INPUT = données de création */
+export interface DemandeCongeInput {
+  employeId: Types.ObjectId | string; 
   type: TypeConge;
   dateDebut: Date;
   dateFin: Date;
-  commentaire: string;
+  commentaire?: string;
   statut: StatutDemande;
+}
+
+/** 🔹 DOCUMENT Mongo */
+export interface IDemandeConge extends Document, DemandeCongeInput {
   dateCreation: Date;
 }
+
 
 const DemandeCongeSchema = new Schema<IDemandeConge>({
   employeId: { 

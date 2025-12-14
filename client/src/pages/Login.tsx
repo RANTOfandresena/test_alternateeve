@@ -16,17 +16,17 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center px-4 py-12">
+    <div className="flex justify-center px-4 py-12 bg-background font-sans">
       <AuthContainer
         title="Connexion"
         subtitle="Accédez à votre espace Alternateeve"
         footer={
-          <div className="flex items-center justify-center gap-2 text-slate-600 text-sm">
+          <div className="flex items-center justify-center gap-2 text-secondary text-sm">
             <span>Pas encore de compte ?</span>
             <button
               type="button"
               onClick={() => navigate('/register')}
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-accent font-semibold hover:underline"
             >
               Créer un compte
             </button>
@@ -34,7 +34,7 @@ const LoginPage = () => {
         }
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
+          <label className="flex flex-col gap-2 text-sm font-semibold text-primary">
             Email
             <input
               type="email"
@@ -42,11 +42,11 @@ const LoginPage = () => {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="vous@example.com"
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="rounded-xl border border-secondary bg-background px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
+          <label className="flex flex-col gap-2 text-sm font-semibold text-primary">
             Mot de passe
             <input
               type="password"
@@ -54,15 +54,15 @@ const LoginPage = () => {
               value={form.motDePasse}
               onChange={(e) => setForm({ ...form, motDePasse: e.target.value })}
               placeholder="••••••••"
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="rounded-xl border border-secondary bg-background px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"
             />
           </label>
 
           {error && (
-            <p className="rounded-xl bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</p>
+            <p className="rounded-xl bg-error/10 text-error px-3 py-2 text-sm">{error}</p>
           )}
           {isLoggedIn && user && (
-            <p className="rounded-xl bg-green-50 text-green-700 px-3 py-2 text-sm">
+            <p className="rounded-xl bg-success/10 text-success px-3 py-2 text-sm">
               Connecté en tant que {user.user.nom}
             </p>
           )}
