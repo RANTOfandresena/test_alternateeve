@@ -36,3 +36,8 @@
 *   L'employeur doit planifier les départs en congé payé en début d'année (Art. 128).
 *   Toute renonciation au droit à congé est nulle (Art. 132).
 *   La prescription du droit au congé payé est de 3 ans (Art. 129).
+
+
+# Supprime le dernier commit (ou un commit spécifique via rebase)
+git rebase -i 11fbd9617a8be87f41a1d11e1871f73360312096^
+# Dans l’éditeur, supprime ou marque "drop" pour le commit contenant les secrets
