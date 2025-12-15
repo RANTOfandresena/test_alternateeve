@@ -1,5 +1,7 @@
 import { NavLink } from "react-router-dom";
-import { Home, User, RefreshCw } from "lucide-react";
+import { Home, User, Calendar, Users, Settings, RefreshCw } from "lucide-react";
+
+
 
 type Props = {
   isLoggedIn: boolean;
@@ -22,17 +24,41 @@ const AppNav: React.FC<Props> = ({ isLoggedIn, isPageManager, roleUser,changePag
     <aside className="w-64 bg-white shadow-lg flex-shrink-0 flex flex-col">
       <nav className="flex flex-col flex-1 p-4">
         {/* Section principale */}
-        <div className="space-y-1">
-          <NavLink to="/" className={linkClass}>
-            <Home size={18} />
-            Accueil
-          </NavLink>
 
-          <NavLink to="/profil" className={linkClass}>
-            <User size={18} />
-            Profil
+
+      <div className="space-y-1">
+        <NavLink to="/" className={linkClass}>
+          <Home size={18} />
+          Accueil
+        </NavLink>
+
+        <NavLink to="/demande" className={linkClass}>
+          <User size={18} />
+          Demande
+        </NavLink>
+
+        <NavLink to="/calendrier" className={linkClass}>
+          <Calendar size={18} />
+          Calendrier
+        </NavLink>
+
+        {isPageManager && (
+          <NavLink to="/employer" className={linkClass}>
+            <Users size={18} />
+            Employés
           </NavLink>
-        </div>
+        )}
+
+        <NavLink to="/profil" className={linkClass}>
+          <User size={18} />
+          Profil
+        </NavLink>
+
+        <NavLink to="/regle" className={linkClass}>
+          <Settings size={18} />
+          Règles de congé
+        </NavLink>
+      </div>
         
         {/* Séparateur et section admin */}
         {roleUser === "MANAGER" && (
