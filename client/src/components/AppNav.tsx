@@ -1,12 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { Home, User, Shield } from "lucide-react";
+import { Home, User, RefreshCw } from "lucide-react";
 
 type Props = {
   isLoggedIn: boolean;
+  isPageManager: boolean;
   roleUser?: string;
+  changePage?: () => void;
 };
 
-const AppNav: React.FC<Props> = ({ isLoggedIn, roleUser }) => {
+const AppNav: React.FC<Props> = ({ isLoggedIn, isPageManager, roleUser,changePage }) => {
   if (!isLoggedIn) return null;
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -31,21 +33,22 @@ const AppNav: React.FC<Props> = ({ isLoggedIn, roleUser }) => {
             Profil
           </NavLink>
         </div>
-
+        
         {/* Séparateur et section admin */}
-        {roleUser === "ADMIN" && (
-          <div className="mt-auto"> {/* pousse admin en bas si tu veux */}
-            <div className="border-t my-6" />
+        {roleUser === "MANAGER" && (
+          <div className="mt-auto">
+            <div className="border-t border-slate-300 my-6" />
 
             <div className="space-y-1">
-              <p className="px-4 text-xs font-semibold text-slate-400 uppercase">
-                Administration
+              <p className="px-4 text-xl font-semibold text-slate-400 uppercase">
+                {!isPageManager ? "EMPLOYER" : "MANAGER"}
               </p>
-
-              <NavLink to="/admin" className={linkClass}>
-                <Shield size={18} />
-                Admin
-              </NavLink>
+                <button 
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-medium transition text-slate-600 hover:bg-slate-100 hover:text-slate-900" 
+                  onClick={changePage}
+                >
+                  <RefreshCw size={18} /> Aller à ma page {isPageManager ? "Employe" : "Manager"}
+                </button>
             </div>
           </div>
         )}

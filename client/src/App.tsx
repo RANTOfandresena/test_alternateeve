@@ -1,40 +1,69 @@
-import { useAppDispatch, useAppSelector } from './hooks/hooks';
-import { logout, changePage } from './features/authSlice';
-import AppHeader from './components/AppHeader';
-import AppRouter from './router';
-import AppNav from './components/AppNav';
+import { useAppSelector } from './hooks/hooks';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import RouteGuard from './components/RouteGuard';
+import { Suspense, lazy } from 'react';
+
+const RegisterPage = lazy(() => import('./pages/Register'));
+const HomePageEmploye = lazy(() => import('./pages/employe/RouterEmploye'));
+const HomePageManager = lazy(() => import('./pages/manager/RouterManager'));
+const GoogleAuth = lazy(() => import('./pages/GoogleAuth'));
 
 const App = () => {
-  const dispatch = useAppDispatch();
-  const { isLoggedIn, isPageManager , user } = useAppSelector((state) => state.auth);
+  const { isLoggedIn, isPageManager } = useAppSelector((state) => state.auth);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-      {isLoggedIn && (
-        <AppHeader
-          roleUser={user?.user.role}
-          isPageManager={isPageManager}
-          isLoggedIn={isLoggedIn}
-          userName={user?.user.nom}
-          userEmail={user?.user.email}
-          onLogout={() => dispatch(logout())}
-          changePage={() => dispatch(changePage())}
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <RouteGuard isAllowed={isLoggedIn} redirectTo="/login">
+              <Navigate to={isPageManager ? "/manager" : "/employe"} replace />
+            </RouteGuard>
+          }
         />
-      )}
 
-      <div className="flex flex-1 min-h-0">
-        {isLoggedIn && (
-          <AppNav
-            isLoggedIn={isLoggedIn}
-            roleUser={user?.user.role}
-          />
-        )}
+        <Route
+          path="/manager"
+          element={
+            <RouteGuard isAllowed={isLoggedIn && isPageManager} redirectTo="/">
+              <HomePageManager />
+            </RouteGuard>
+          }
+        />
 
-        <main className="flex-1 p-4 overflow-auto" style={{ height: 'calc(100vh - 64px)' }}>
-          <AppRouter />
-        </main>
-      </div>
-    </div>
+        <Route
+          path="/employe"
+          element={
+            <RouteGuard isAllowed={isLoggedIn && !isPageManager} redirectTo="/">
+              <HomePageEmploye />
+            </RouteGuard>
+          }
+        />
+
+        <Route path="/home" element={<Navigate to="/" replace />} />
+
+        <Route
+          path="/login"
+          element={
+            <RouteGuard isAllowed={!isLoggedIn} redirectTo="/">
+              <GoogleAuth />
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="/register"
+          element={
+            <RouteGuard isAllowed={!isLoggedIn} redirectTo="/">
+              <RegisterPage />
+            </RouteGuard>
+          }
+        />
+
+        <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} />
+      </Routes>
+    </Suspense>
   );
 };
 
