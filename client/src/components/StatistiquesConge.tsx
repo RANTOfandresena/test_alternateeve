@@ -35,7 +35,6 @@ const StatistiquesConge = ({ stats }: StatistiquesCongeProps) => {
       label: 'En attente',
       color: 'bg-amber-100 text-amber-800',
       icon: Clock,
-      color: 'bg-green-100 text-green-800',
       gradient: 'from-amber-500 to-amber-600',
       bgLight: 'bg-amber-50',
       textColor: 'text-amber-600'

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { CalendarDay, DayButton, DayPicker, type DayButtonProps } from "react-day-picker";
+import { fr } from "date-fns/locale";
 import 'react-day-picker/dist/style.css';
 import type { DemandeCongeItem } from "../../api/demandeConge";
 
@@ -34,16 +35,21 @@ const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
     return usersSet.size;
   };
 
-  const modifiers = ranges.reduce((acc, r) => {
-    acc[r.name] = { from: r.from, to: r.to };
-    return acc;
-  }, {} as Record<string, { from: Date; to: Date }>);
+  const modifiers = {
+    ...ranges.reduce((acc, r) => {
+      acc[r.name] = { from: r.from, to: r.to };
+      return acc;
+    }, {} as Record<string, { from: Date; to: Date }>),
+
+    weekend: (date: Date) => date.getDay() === 0 || date.getDay() === 6
+  };
 
   const modifiersClassNames = {
     EN_ATTENTE: 'bg-yellow-100 text-blue-800 rounded-md',
     ACCEPTE: 'bg-green-200 text-green-800 rounded-md',
     REFUSE: 'bg-red-200 text-red-800 rounded-md',
-    selected: 'border-2 border-blue-500 !rounded-full'
+    selected: 'border-2 border-blue-500 !rounded-full',
+    weekend: '!bg-gray-100 !text-gray-400'
   };
 
   function DayButtonWithContext(props: DayButtonProps) {
@@ -68,6 +74,7 @@ const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
     <div>
       <DayPicker
         mode="single"
+        locale={fr}
         selected={selectedDay}
         onSelect={handleSelect}
         modifiers={modifiers}

@@ -12,7 +12,7 @@ const LoginPage = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(loginUser(form));
+    // dispatch(loginUser(form));
   };
 
   return (

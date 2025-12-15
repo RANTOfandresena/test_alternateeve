@@ -40,8 +40,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="px-4 py-10 md:py-14 bg-linear-to-b from-slate-50 to-slate-100 min-h-full">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <div className="bg-linear-to-b from-slate-50 to-slate-100 min-h-full">
         <section className="flex justify-center">
           <ManagerDemandes
             demandes={demandes}
@@ -51,7 +50,6 @@ const HomePage = () => {
             onRefuser={handleRefuser}
           />
         </section>
-      </div>
     </div>
   );
 };

@@ -27,16 +27,16 @@ type UtilisateurModel = Model<IUtilisateur, {}, IUtilisateurMethods>;
 const UtilisateurSchema = new Schema<IUtilisateur, UtilisateurModel>({
   nom: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  motDePasse: { type: String, required: true },
+  motDePasse: { type: String},
   genre: { type: String, enum: Object.values(Genre),default: Genre.MASCULIN, required: true },
   role: { type: String, enum: Object.values(Role), required: true },
 });
 
-UtilisateurSchema.pre('save', async function (this: HydratedDocument<IUtilisateur>) {
-  if (!this.isModified('motDePasse')) return;
-  const salt = await bcrypt.genSalt(10);
-  this.motDePasse = await bcrypt.hash(this.motDePasse, salt);
-});
+// UtilisateurSchema.pre('save', async function (this: HydratedDocument<IUtilisateur>) {
+//   if (!this.isModified('motDePasse')) return;
+//   const salt = await bcrypt.genSalt(10);
+//   this.motDePasse = await bcrypt.hash(this.motDePasse, salt);
+// });
 
 UtilisateurSchema.set('toJSON', {
   transform: (_doc, ret) => {

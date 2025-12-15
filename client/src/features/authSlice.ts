@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import { login, type LoginPayload, register, type RegisterPayload } from '../api/auth';
+import { login, register, type RegisterPayload } from '../api/auth';
 
 export interface UserInfo {
   id: string;
@@ -33,7 +33,7 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: LoginPayload, { rejectWithValue }) => {
+  async (credentials: string, { rejectWithValue }) => {
     try {
       const data = await login(credentials);
       return data;

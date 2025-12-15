@@ -5,6 +5,7 @@ import HomePageEmploye from '../pages/employe/Home';
 import HomePageManager from '../pages/manager/Home';
 import { useAppSelector } from '../hooks/hooks';
 import RouteGuard from '../components/RouteGuard';
+import GoogleAuth from '../pages/GoogleAuth';
 
 const AppRouter = () => {
   const { isLoggedIn,isPageManager } = useAppSelector((state) => state.auth);
@@ -43,7 +44,7 @@ const AppRouter = () => {
         path="/login"
         element={
           <RouteGuard isAllowed={!isLoggedIn} redirectTo="/">
-            <LoginPage />
+            <GoogleAuth />
           </RouteGuard>
         }
       />

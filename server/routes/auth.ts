@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { login, register } from '../controllers/authContriller';
+import { loginGoogle } from '../controllers/authGoogleController';
 
 const router = Router();
 
@@ -66,5 +67,5 @@ router.post('/register', register);
  */
 
 router.post('/login', login);
-
+router.post('/google',loginGoogle);
 export default router;
