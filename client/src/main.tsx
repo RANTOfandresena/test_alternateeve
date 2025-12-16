@@ -17,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
         <GoogleOAuthProvider clientId={googleClientId}>
           <BrowserRouter>
             <App />
+            {/* <PageLoader/> */}
           </BrowserRouter>
         </GoogleOAuthProvider>
       </PersistGate>

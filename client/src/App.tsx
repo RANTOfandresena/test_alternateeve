@@ -2,6 +2,7 @@ import { useAppSelector } from './hooks/hooks';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import RouteGuard from './components/RouteGuard';
 import { Suspense, lazy } from 'react';
+import PageLoader from './components/elements/PageLoader';
 
 const RegisterPage = lazy(() => import('./pages/Register'));
 const HomePageEmploye = lazy(() => import('./pages/employe/RouterEmploye'));
@@ -12,7 +13,7 @@ const App = () => {
   const { isLoggedIn, isPageManager } = useAppSelector((state) => state.auth);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<PageLoader/>}>
       <Routes>
         <Route
           path="/"
@@ -24,7 +25,7 @@ const App = () => {
         />
 
         <Route
-          path="/manager"
+          path="/manager/*"
           element={
             <RouteGuard isAllowed={isLoggedIn && isPageManager} redirectTo="/">
               <HomePageManager />
@@ -33,7 +34,7 @@ const App = () => {
         />
 
         <Route
-          path="/employe"
+          path="/employe/*"
           element={
             <RouteGuard isAllowed={isLoggedIn && !isPageManager} redirectTo="/">
               <HomePageEmploye />

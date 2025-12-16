@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import AppHeader from '../AppHeader';
 import AppNav from '../AppNav';
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
 import { logout, changePage } from '../../features/authSlice';
 import { Outlet } from 'react-router-dom';
+import PageLoader from '../elements/PageLoader';
 
 
 const HomeLayout: React.FC = () => {
@@ -28,7 +29,9 @@ const HomeLayout: React.FC = () => {
         />
 
         <main className="flex-1 p-4 overflow-auto" style={{ height: 'calc(100vh - 64px)' }}>
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
