@@ -1,21 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
-import { type DemandeCongeItem } from '../api/demandeConge';
-import { formatDate, isDateInRange } from '../utils/date';
+import { useState, useMemo } from 'react';
+import { isDateInRange } from '../utils/date';
 import FilterBar from './elements/FilterBar';
 import FilterTags from './elements/FilterTags';
 import DemandCard from './elements/DemandCard';
 import EmptyFilterState from './elements/EmptyFilterState';
 import StatsOverview from './elements/StatsOverview';
 import LoadingOverlay from './elements/LoadingOverlay';
-import { Search, Filter, Calendar, Download } from 'lucide-react';
+import { Filter, Download } from 'lucide-react';
+import type { DemandeCongeItem } from '../pages/manager/Demande';
 
-const statutClasses: Record<DemandeCongeItem['statut'], string> = {
+const statutClasses: Record<"EN_ATTENTE" | "ACCEPTE" | "REFUSE", string> = {
   EN_ATTENTE: 'bg-amber-100 text-amber-800 border-amber-200',
   ACCEPTE: 'bg-green-100 text-green-800 border-green-200',
   REFUSE: 'bg-rose-100 text-rose-800 border-rose-200',
 };
 
-const statutLabels: Record<DemandeCongeItem['statut'], string> = {
+const statutLabels: Record<"EN_ATTENTE" | "ACCEPTE" | "REFUSE", string> = {
   EN_ATTENTE: 'En attente',
   ACCEPTE: 'Accepté',
   REFUSE: 'Refusé',
@@ -30,7 +30,7 @@ type ManagerDemandesProps = {
 };
 
 type Filters = {
-  statut: DemandeCongeItem['statut'] | 'TOUS';
+  statut: "EN_ATTENTE" | "ACCEPTE" | "REFUSE" | 'TOUS';
   dateDebut: string;
   dateFin: string;
   employeId: string;
@@ -93,7 +93,7 @@ const ManagerDemandes = ({ demandes, loading, error, onAccepter, onRefuser }: Ma
       if (filters.searchText) {
         const searchLower = filters.searchText.toLowerCase();
         const matchesCommentaire = demande.commentaire?.toLowerCase().includes(searchLower);
-        const matchesType = demande.type.toLowerCase().includes(searchLower);
+        const matchesType = demande.type?.toLowerCase().includes(searchLower);
         const matchesEmployee = demande.employeId?.toLowerCase().includes(searchLower);
         
         if (!matchesCommentaire && !matchesType && !matchesEmployee) {
@@ -124,12 +124,17 @@ const ManagerDemandes = ({ demandes, loading, error, onAccepter, onRefuser }: Ma
     if (selectedDemandes.size === filteredDemandes.length) {
       setSelectedDemandes(new Set());
     } else {
-      setSelectedDemandes(new Set(filteredDemandes.map(d => d._id)));
+      setSelectedDemandes(
+        new Set(filteredDemandes.map(d => d._id).filter((id): id is string => !!id))
+      );
     }
   };
 
   const handleExportSelection = () => {
-    const selected = filteredDemandes.filter(d => selectedDemandes.has(d._id));
+    const selected = filteredDemandes.filter(
+      (d) => d._id !== undefined && selectedDemandes.has(d._id)
+    );
+
     // Implement export logic here
     console.log('Exporting:', selected);
   };
@@ -270,8 +275,9 @@ const ManagerDemandes = ({ demandes, loading, error, onAccepter, onRefuser }: Ma
                 <DemandCard
                   key={item._id}
                   demande={item}
-                  isSelected={selectedDemandes.has(item._id)}
+                  isSelected={item._id ? selectedDemandes.has(item._id) : false}
                   onToggleSelect={() => {
+                    if(!item._id ) return
                     const newSelected = new Set(selectedDemandes);
                     if (newSelected.has(item._id)) {
                       newSelected.delete(item._id);

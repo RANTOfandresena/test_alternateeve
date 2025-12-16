@@ -1,10 +1,11 @@
 import api from './axiosInstance';
 
 export type DemandeCongePayload = {
-  type: 'VACANCES' | 'MALADIE' | 'MATERNITE' | 'PATERNITE' | 'FAMILIAL';
-  dateDebut: string;
-  dateFin: string;
+  type?: 'VACANCES' | 'MALADIE' | 'MATERNITE' | 'PATERNITE' | 'FAMILIAL';
+  dateDebut?: string;
+  dateFin?: string;
   commentaire?: string;
+  statut?:"EN_ATTENTE" | "ACCEPTE" | "REFUSE"
 };
 
 export const creerDemandeConge = async (payload: DemandeCongePayload) => {
@@ -13,13 +14,13 @@ export const creerDemandeConge = async (payload: DemandeCongePayload) => {
 };
 
 export type DemandeCongeItem = {
-  _id: string;
-  type: DemandeCongePayload['type'];
+  _id?: string;
+  type: "VACANCES" | "MALADIE" | "MATERNITE" | "PATERNITE" | "FAMILIAL";
   dateDebut: string;
   dateFin: string;
   commentaire?: string;
-  statut: 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE';
-  dateCreation: string;
+  statut?: 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE';
+  dateCreation?: string;
   employeId?: string;
 };
 

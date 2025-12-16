@@ -24,3 +24,8 @@ export const updateUserRole = async (
 ): Promise<void> => {
   await api.put(`/utilisateur/${userId}/role`, { role });
 };
+
+export const fetchUsersFromIds = async (ids: string[]) => {
+  const { data } = await api.post('utilisateur/from-ids', { id_users: ids });
+  return data;
+};

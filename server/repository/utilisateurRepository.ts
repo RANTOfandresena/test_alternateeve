@@ -72,3 +72,7 @@ export const trouverUtilisateursPagine = async (
 export const mettreAJourRoleUtilisateur = (userId: string, role: Role) => {
   return Utilisateur.findByIdAndUpdate(userId, { role ,isActive: true }, { new: true });
 };
+
+export const findByIds = (ids: string[]): Promise<IUtilisateur[]> => {
+  return Utilisateur.find({ _id: { $in: ids } });
+};

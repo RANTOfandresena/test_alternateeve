@@ -43,3 +43,15 @@ export const updateUserRole = async (req: Request, res: Response) => {
     });
   }
 };
+export const getUsersFromIds = async (req: Request, res: Response) => {
+  try {
+    const idUser: string[] = req.body.id_users;
+    if (!idUser) return res.status(400).json({ message: 'Aucun congé fourni' });
+
+    const users = await UtilisateurService.getUsersFromIds(idUser);
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}

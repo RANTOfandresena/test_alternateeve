@@ -64,3 +64,7 @@ export const mettreAJourRoleUtilisateurService = async (userId: string, role: Ro
   if (!utilisateur) throw new Error("Utilisateur non trouvé");
   return utilisateur;
 };
+
+export const getUsersFromIds= async (id_users: string[]): Promise<IUtilisateur[]> => {
+  return UtilisateurRepository.findByIds(id_users);
+}

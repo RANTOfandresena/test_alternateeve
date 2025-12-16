@@ -11,7 +11,6 @@ interface ModalProps {
 
 const Modal = ({ open, onClose, title, children }: ModalProps) => {
   if (!open) return null;
-
   return createPortal(
     <div className="fixed inset-0 z-[9999]">
       {/* Overlay */}
@@ -25,7 +24,7 @@ const Modal = ({ open, onClose, title, children }: ModalProps) => {
         {/* Modal */}
         <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-300">
             <h2 className="text-lg font-semibold text-slate-800">
               {title}
             </h2>

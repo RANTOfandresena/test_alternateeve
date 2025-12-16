@@ -8,6 +8,11 @@ export const formatDate = (value: string) =>
     new Date(value)
 );
 
+/**
+ * Format une date au format  (jj/mm/aaaa)
+ */
+export const formatDateFromDate = (date: Date) =>
+  new Intl.DateTimeFormat('fr-FR', { year: 'numeric', month: 'short', day: '2-digit' }).format(date);
 
 /**
  * Format une date avec le jour de la semaine
