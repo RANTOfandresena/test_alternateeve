@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Role, IUtilisateur, Genre } from "../models/Utilisateur";
 import * as UtilisateurRepository from "../repository/utilisateurRepository";
+import { FiltreUtilisateur } from "../repository/utilisateurRepository";
 
 const JWT_SECRET = process.env.JWT_SECRET || "cle";
 
@@ -35,4 +36,31 @@ export const register = async (data: {
   });
 
   return { message: "Utilisateur créé !", utilisateur };
+};
+
+export const recupererUtilisateurs = async (
+  page: number,
+  limit: number,
+  filtres: FiltreUtilisateur
+) => {
+  const { utilisateurs, total } = await UtilisateurRepository.trouverUtilisateursPagine(
+    page,
+    limit,
+    filtres
+  );
+
+  return {
+    data: utilisateurs,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
+export const mettreAJourRoleUtilisateurService = async (userId: string, role: Role) => {
+  const utilisateur = await UtilisateurRepository.mettreAJourRoleUtilisateur(userId, role);
+  if (!utilisateur) throw new Error("Utilisateur non trouvé");
+  return utilisateur;
 };

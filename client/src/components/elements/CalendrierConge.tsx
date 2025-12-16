@@ -1,14 +1,21 @@
-import React, { useState } from "react";
-import { CalendarDay, DayButton, DayPicker, type DayButtonProps } from "react-day-picker";
+import { useState } from "react";
+import { DayButton, DayPicker, type DayButtonProps } from "react-day-picker";
 import { fr } from "date-fns/locale";
 import 'react-day-picker/dist/style.css';
 import type { DemandeCongeItem } from "../../api/demandeConge";
 
 type CalendrierCongeProps = {
   conge: DemandeCongeItem[];
+  dateSelected: (date: Date, matched: DemandeCongeItem[]) => void;
 };
+interface Conge {
+  dateDebut: string | Date
+  dateFin: string | Date
+}
 
-const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
+      
+
+const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
   const ranges = conge.map(d => ({
     name: d.statut,
     from: new Date(d.dateDebut),
@@ -17,14 +24,22 @@ const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
   }));
 
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
-  const [coveringRanges, setCoveringRanges] = useState<string[]>([]);
-
+  const normalize = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate())
   const handleSelect = (day: Date) => {
     setSelectedDay(day);
-    const matched = ranges
-      .filter(r => day >= r.from && day <= r.to)
-      .map(r => r.name);
-    setCoveringRanges(matched);
+    if(day.getDay() === 0 || day.getDay() === 6) {
+      dateSelected(day,[])
+    }else{
+      const matched = conge.filter((d: Conge) => {
+        const dayN = normalize(day)
+        const debut = normalize(new Date(d.dateDebut))
+        const fin = normalize(new Date(d.dateFin))
+
+        return dayN >= debut && dayN <= fin
+      })
+      dateSelected(day, matched)
+    }
+    
   };
 
   const countUsersForDay = (date: Date) => {
@@ -36,11 +51,9 @@ const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
   };
 
   const modifiers = {
-    ...ranges.reduce((acc, r) => {
-      acc[r.name] = { from: r.from, to: r.to };
-      return acc;
-    }, {} as Record<string, { from: Date; to: Date }>),
-
+    EN_ATTENTE: ranges.filter(r => r.name === 'EN_ATTENTE').map(r => ({ from: r.from, to: r.to })),
+    ACCEPTE: ranges.filter(r => r.name === 'ACCEPTE').map(r => ({ from: r.from, to: r.to })),
+    REFUSE: ranges.filter(r => r.name === 'REFUSE').map(r => ({ from: r.from, to: r.to })),
     weekend: (date: Date) => date.getDay() === 0 || date.getDay() === 6
   };
 
@@ -58,9 +71,9 @@ const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
 
     return (
       <div className="relative w-10 h-10 flex items-center justify-center">
-        <DayButton {...buttonProps} day={day} modifiers={modifiers} className="z-1 flex items-center justify-center" />
+        <DayButton {...buttonProps} day={day} modifiers={modifiers} className=" flex items-center justify-center" />
         {userCount > 1 && (
-          <div className="absolute -top-1 -right-1 z-2">
+          <div className="absolute -top-1 -right-1">
             <span className="flex items-center justify-center w-3 h-3 text-xs font-bold text-white bg-blue-500 rounded-full">
               {userCount}
             </span>
@@ -79,19 +92,10 @@ const CalendrierConge = ({ conge }: CalendrierCongeProps) => {
         onSelect={handleSelect}
         modifiers={modifiers}
         modifiersClassNames={modifiersClassNames}
-        numberOfMonths={12}
+        numberOfMonths={3}
         components={{ DayButton: DayButtonWithContext }}
         required
       />
-
-      <div className="mt-4">
-        {selectedDay && (
-          <div>
-            Jour sélectionné: {selectedDay.toLocaleDateString()} <br />
-            Plages couvrantes: {coveringRanges.join(', ') || "Aucune"}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

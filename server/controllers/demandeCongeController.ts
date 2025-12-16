@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as DemandeService from "../services/demandeCongeService";
 import { Types } from "mongoose";
+import DemandeConge from "../models/DemandeConge";
 
 export const createDemande = async (req: Request, res: Response) => {
   try {

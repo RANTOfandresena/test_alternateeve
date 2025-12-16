@@ -1,7 +1,8 @@
 import { OAuth2Client } from "google-auth-library";
 import { findOrCreateByEmail } from "../repository/utilisateurRepository";
 import jwt from "jsonwebtoken";
-
+import dotenv from "dotenv";
+dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "cle";
 export const auth_2_client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID, 

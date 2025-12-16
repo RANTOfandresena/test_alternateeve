@@ -16,6 +16,7 @@ export interface IUtilisateur extends Document {
   motDePasse: string;
   genre: Genre;
   role: Role;
+  isActive: boolean;
 }
 
 export interface IUtilisateurMethods {
@@ -30,6 +31,7 @@ const UtilisateurSchema = new Schema<IUtilisateur, UtilisateurModel>({
   motDePasse: { type: String},
   genre: { type: String, enum: Object.values(Genre),default: Genre.MASCULIN, required: true },
   role: { type: String, enum: Object.values(Role), required: true },
+  isActive: { type: Boolean, default: false }
 });
 
 // UtilisateurSchema.pre('save', async function (this: HydratedDocument<IUtilisateur>) {

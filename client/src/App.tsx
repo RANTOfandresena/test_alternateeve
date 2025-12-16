@@ -13,7 +13,7 @@ const App = () => {
   const { isLoggedIn, isPageManager } = useAppSelector((state) => state.auth);
 
   return (
-    <Suspense fallback={<PageLoader/>}>
+    <Suspense fallback={<PageLoader className='!h-screen'/>}>
       <Routes>
         <Route
           path="/"

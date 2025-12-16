@@ -36,7 +36,6 @@ app.use('/utilisateur', utilisateurRouter);
 app.use('/demande-conge',demandeConge)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
