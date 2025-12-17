@@ -24,8 +24,8 @@ export type DemandeCongeItem = {
   employeId?: string;
 };
 
-export const getMesDemandesConge = async () => {
-  const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me');
+export const getMesDemandesConge = async (params = '') => {
+  const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me?' + params);
   return data;
 };
 
@@ -44,4 +44,11 @@ export const refuserDemandeConge = async (id: string) => {
   return data;
 };
 
+export const updateDemandeConge = async (
+  id: string,
+  updateData: Partial<Omit<DemandeCongeItem, "statut">>
+): Promise<DemandeCongeItem> => {
+  const { data } = await api.patch<DemandeCongeItem>( `/demande-conge/${id}`,updateData);
+  return data;
+};
 

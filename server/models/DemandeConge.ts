@@ -4,9 +4,7 @@ import { Schema, model, Document, Types } from 'mongoose';
 export enum TypeConge {
   VACANCES = 'VACANCES',
   MALADIE = 'MALADIE',
-  MATERNITE = 'MATERNITE',
-  PATERNITE = 'PATERNITE',
-  FAMILIAL = 'FAMILIAL',
+  ABSENCE = 'ABSENCE'
 }
 
 export enum StatutDemande {

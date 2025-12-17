@@ -59,22 +59,23 @@ const AppNav: React.FC<Props> = ({ isLoggedIn, isPageManager, roleUser, changePa
           </NavLink>
         </div>
 
-        {roleUser === "MANAGER" && (
-          <div className="mt-auto">
-            <div className="border-t border-slate-300 my-6" />
-            <div className="space-y-1">
-              <p className="px-4 text-xl font-semibold text-slate-400 uppercase">
-                {!isPageManager ? "EMPLOYER" : "MANAGER"}
-              </p>
+        
+        <div className="mt-auto">
+          <div className="border-t border-slate-300 my-6" />
+          <div className="space-y-1">
+            <p className="px-4 text-xl font-semibold text-slate-400 uppercase">
+              {!isPageManager ? "EMPLOYER" : "MANAGER"}
+            </p>
+            {roleUser === "MANAGER" && (
               <button
                 className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-medium transition text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 onClick={changePage}
               >
                 <RefreshCw size={18} /> Aller à ma page {isPageManager ? "Employe" : "Manager"}
               </button>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </nav>
     </aside>
   );

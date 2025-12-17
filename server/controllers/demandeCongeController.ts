@@ -21,7 +21,7 @@ export const createDemande = async (req: Request, res: Response) => {
 export const getMyDemandes = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const demandes = await DemandeService.recupererMesDemandes(user._id);
+    const demandes = await DemandeService.recupererDemandes({...req.query,employeId : user.employeId});
     res.json(demandes);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
@@ -57,3 +57,17 @@ export const refuserDemande = async (req: Request, res: Response) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const updateDemande = async (req: Request, res: Response) => {
+  try {
+    const employeId = req.user._id.toString();
+    const demandeId = req.params.id;
+    const updateData = req.body;
+
+    const updatedDemande = await DemandeService.updateDemande(demandeId, employeId, updateData);
+
+    return res.status(200).json({ message: "Demande mise à jour avec succès", updatedDemande });
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+}

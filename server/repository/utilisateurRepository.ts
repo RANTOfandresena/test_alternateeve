@@ -72,7 +72,6 @@ export const trouverUtilisateursPagine = async (
     Utilisateur.countDocuments(query)
   ]);
    
-
   return { utilisateurs, total };
 };
 export const mettreAJourRoleUtilisateur = (userId: string, role: Role) => {

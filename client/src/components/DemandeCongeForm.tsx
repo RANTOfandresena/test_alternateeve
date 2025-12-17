@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAppSelector } from "../hooks/hooks";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import type { DemandeCongeItem, DemandeCongePayload } from "../api/demandeConge";
-import { isPresentOrFutureString } from "../utils/date";
+import { getMesDemandesConge, type DemandeCongeItem, type DemandeCongePayload } from "../api/demandeConge";
+import { formatLocalDate, isPresentOrFutureString } from "../utils/date";
+import { normalize } from "./elements/CalendrierConge";
 
 type LeaveType = DemandeCongePayload["type"];
 
@@ -33,12 +34,16 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
   const isViewMode = isValidation && !!demande;
   const isEditMode = !isValidation && !!demande;
   const isCreateMode = !isValidation && !demande;
+  const listParams = []
+
+  const listParamsRef = useRef<Set<string>>(new Set());
 
   const [form, setForm] = useState(initialState);
   const [range, setRange] = useState<DateRange | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [demandes,setDemande] = useState<DemandeCongeItem[]>([])
 
   /* ---------- dates ---------- */
   const demain = new Date();
@@ -51,7 +56,6 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
 
   const estDateValide = (date: Date) =>
     date >= demain && isJourOuvre(date);
-
   useEffect(() => {
     if (!demande) return;
 
@@ -78,6 +82,10 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
     }
   }, [range]);
 
+  useEffect(()=>{
+    onMonthChange(range?.from ?? new Date())
+  },[])
+
   const handleChange = <K extends keyof LeaveRequestFormState>(
     key: K,
     value: LeaveRequestFormState[K]
@@ -95,10 +103,11 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
     try {
       const ok = await onSubmit({
         type: form.type,
-        dateDebut: form.startDate.toISOString().split("T")[0],
-        dateFin: form.endDate.toISOString().split("T")[0],
+        dateDebut: formatLocalDate(form.startDate),
+        dateFin: formatLocalDate(form.endDate),
         commentaire: form.reason,
       });
+      
 
       setSubmitted(ok !== null);
       if (isCreateMode) setForm(initialState);
@@ -118,6 +127,38 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
     } finally {
       setLoading(false);
     }
+  };
+
+  const onMonthChange = async (date: Date) => {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + 1);
+
+    const params = `dateDu=${formatLocalDate(date)}&dateAu=${formatLocalDate(d)}`;
+
+    if (!listParamsRef.current.has(params)) {
+      const demandes = await getMesDemandesConge(params);
+      setDemande(prev => [...prev, ...demandes]);
+
+      listParamsRef.current.add(params);
+    }
+  };
+  const joursReserves: Date[] = demandes.flatMap(demande => {
+    const start = new Date(demande.dateDebut);
+    const end = new Date(demande.dateFin);
+    const dates = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      dates.push(new Date(d));
+    }
+    return dates;
+  });
+  const modifiers = {
+    deja_reserver: joursReserves,
+    weekend:(date: Date) => date.getDay() === 0 || date.getDay() === 6
+  };
+
+  const modifiersClassNames = {
+    deja_reserver: '!bg-yellow-200 !text-blue-800 !rounded-md',
+    weekend: 'rdp-day rdp-disabled !bg-white !text-gray-400 !font-normal'
   };
 
   return (
@@ -158,7 +199,10 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
           selected={range}
           defaultMonth={range?.from}
           onSelect={isViewMode ? undefined : setRange}
-          disabled={(date) => isViewMode || !estDateValide(date)}
+          onMonthChange={onMonthChange}
+          modifiers={modifiers}
+          modifiersClassNames={modifiersClassNames}
+          disabled={(date) => isViewMode || !estDateValide(date) || joursReserves.some(d => d.toDateString() === date.toDateString())}
         />
 
         {/* MOTIF */}

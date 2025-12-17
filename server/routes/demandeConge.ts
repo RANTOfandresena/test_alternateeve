@@ -7,6 +7,7 @@ import {
   getAllDemandes,
   accepterDemande,
   refuserDemande,
+  updateDemande,
 } from '../controllers/demandeCongeController';
 
 const router = Router();
@@ -25,5 +26,8 @@ router.patch('/:id/accepter', requireAuth, requireRole(Role.MANAGER), accepterDe
 
 // Refuser une demande de congé (Manager)
 router.patch('/:id/refuser', requireAuth, requireRole(Role.MANAGER), refuserDemande);
+
+// PUT /demandes/:id => mise à jour d'une demande
+router.put("/:id", requireAuth, updateDemande);
 
 export default router;

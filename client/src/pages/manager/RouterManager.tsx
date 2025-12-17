@@ -2,6 +2,7 @@
 import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import HomeLayout from "../../components/layout/HomeLayout";
+import PageLoader from "../../components/elements/PageLoader";
 const Home = lazy(() => import("./Home"));
 const Employer = lazy(() => import("./Employer"));
 const Demande = lazy(() => import("./Demande"));
@@ -11,7 +12,7 @@ const Regle = lazy(() => import("./Regle"));
 
 export default function RouterManager() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={<PageLoader  className='!h-screen'/>}>
       <Routes>
         <Route path="/" element={<HomeLayout />}>
           <Route index element={<Home />} />

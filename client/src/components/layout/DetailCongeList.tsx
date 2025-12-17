@@ -20,7 +20,11 @@ export type IUtilisateur = {
   role: string;
   isActive: boolean;
 }
-
+export const statutStyles = {
+  EN_ATTENTE: "bg-yellow-100 text-yellow-800 border border-gray-300",
+  ACCEPTE: "bg-green-100 text-green-800 border border-gray-300",
+  REFUSE: "bg-red-100 text-red-800 border border-gray-300",
+};
 
 const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
   const [users, setUsers] = useState<Record<string, IUtilisateur>>({});
@@ -75,11 +79,7 @@ const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
     return <div className="text-gray-400 italic">Sélectionnez une date</div>;
   }
 
-  const statutStyles = {
-    EN_ATTENTE: "bg-yellow-100 text-yellow-800 border border-gray-300",
-    ACCEPTE: "bg-green-100 text-green-800 border border-gray-300",
-    REFUSE: "bg-red-100 text-red-800 border border-gray-300",
-  };
+
 
   if (loading) {
     return (
