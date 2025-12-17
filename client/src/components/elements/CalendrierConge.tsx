@@ -6,14 +6,15 @@ import type { DemandeCongeItem } from "../../api/demandeConge";
 
 type CalendrierCongeProps = {
   conge: DemandeCongeItem[];
-  dateSelected: (date: Date, matched: DemandeCongeItem[]) => void;
+  dateSelected: (date: Date) => void;
 };
-interface Conge {
+export interface Conge {
   dateDebut: string | Date
   dateFin: string | Date
 }
 
-      
+export const normalize = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
 
 const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
   const ranges = conge.map(d => ({
@@ -24,28 +25,18 @@ const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
   }));
 
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
-  const normalize = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate())
   const handleSelect = (day: Date) => {
     setSelectedDay(day);
-    if(day.getDay() === 0 || day.getDay() === 6) {
-      dateSelected(day,[])
-    }else{
-      const matched = conge.filter((d: Conge) => {
-        const dayN = normalize(day)
-        const debut = normalize(new Date(d.dateDebut))
-        const fin = normalize(new Date(d.dateFin))
-
-        return dayN >= debut && dayN <= fin
-      })
-      dateSelected(day, matched)
-    }
-    
+    dateSelected(day)
   };
 
   const countUsersForDay = (date: Date) => {
     const usersSet = new Set<string>();
+    const dayN = normalize(date)
     ranges.forEach(r => {
-      if (date >= r.from && date <= r.to) usersSet.add(r.user);
+      const debut = normalize(new Date(r.from))
+      const fin = normalize(new Date(r.to))
+      if (dayN >= debut && dayN <= fin) usersSet.add(r.user);
     });
     return usersSet.size;
   };

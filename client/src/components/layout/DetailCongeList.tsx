@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { fetchUsersFromIds } from "../../api/utilisateur/utilisateur";
-import type { DemandeCongeItem } from "../../api/demandeConge";
+import { accepterDemandeConge, refuserDemandeConge, type DemandeCongeItem } from "../../api/demandeConge";
 import { formatDate, formatDateFromDate } from '../../utils/date';
 import Modal from "../elements/Modal";
 import PageLoader from "../elements/PageLoader";
-import DemandeValidationConge from "../conge/DemandeValidationConge";
 import DemandeCongeForm from "../DemandeCongeForm";
 
 type DetailsCongeProps = {
   date: Date | null;
   conges: DemandeCongeItem[];
+  onUpdate: (data: DemandeCongeItem) => void;
 };
 
 export type IUtilisateur = {
@@ -22,10 +22,10 @@ export type IUtilisateur = {
 }
 
 
-const DetailCongeList = ({ date, conges }: DetailsCongeProps) => {
+const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
   const [users, setUsers] = useState<Record<string, IUtilisateur>>({});
   const [loading, setLoading] = useState(false);
-  const [openModal,setModel] = useState(false)
+  const [openModal,setOpenModal] = useState(false)
   const [selectConge,setSelectConge] = useState<DemandeCongeItem | undefined>(undefined)
 
   useEffect(() => {
@@ -55,13 +55,20 @@ const DetailCongeList = ({ date, conges }: DetailsCongeProps) => {
 
     loadUsers();
   }, [conges]);
-  const saveConge = async (data: DemandeCongeItem): Promise<boolean> => {
-    
-    return true
+  const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
+    let response;
+    if(data.statut === "ACCEPTE"){
+      response = await accepterDemandeConge(data._id!)
+    } else {
+      response = await refuserDemandeConge(data._id!)
+    }
+    onUpdate(response)
+    setOpenModal(false)
+    return response
   };
   const openModalEditConge = (conge: DemandeCongeItem)=>{
     setSelectConge(conge)
-    setModel(true)
+    setOpenModal(true)
   }
 
   if (!date) {
@@ -85,8 +92,20 @@ const DetailCongeList = ({ date, conges }: DetailsCongeProps) => {
       {selectConge && openModal &&
         <Modal
           open={openModal}
-          onClose={()=>setModel(false)}
-          title="Détail de la demande de congé"
+          onClose={()=>setOpenModal(false)}
+          headerRight={
+            <span
+              className={`text-sm font-medium px-3 py-1 rounded-full ${selectConge.statut && statutStyles[selectConge.statut]}`}
+            >
+              {selectConge.statut?.replace("_", " ")}
+            </span>
+          }
+          title={
+            <div className="flex flex-col text-left">
+              <span className="font-medium text-slate-900">{users[selectConge.employeId!].nom}</span>
+              <span className="text-xs text-slate-500">{users[selectConge.employeId!].email}</span>
+            </div>
+          }
         >
           <DemandeCongeForm
             isValidation={true}

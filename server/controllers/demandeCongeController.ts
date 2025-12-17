@@ -31,6 +31,7 @@ export const getMyDemandes = async (req: Request, res: Response) => {
 export const getAllDemandes = async (req: Request, res: Response) => {
   try {
     const demandes = await DemandeService.recupererDemandes(req.query);
+    console.log(demandes);
     res.json(demandes);
   } catch (err: any) {
     res.status(500).json({ message: err.message });

@@ -3,6 +3,9 @@
  * Format une date au format  (jj/mm/aaaa)
  */
 
+import type { DemandeCongeItem } from "../api/demandeConge";
+import { normalize, type Conge } from "../components/elements/CalendrierConge";
+
 export const formatDate = (value: string) =>
   new Intl.DateTimeFormat('fr-FR', { year: 'numeric', month: 'short', day: '2-digit' }).format(
     new Date(value)
@@ -249,3 +252,43 @@ export function compterJoursOuvres(dateDebut: Date, dateFin: Date): number {
 
   return count;
 }
+
+export function isPresentOrFutureString(date: string): boolean {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return false;
+
+  const now = new Date();
+  now.setMilliseconds(0);
+  d.setMilliseconds(0);
+
+  return d >= now;
+}
+
+export function isPresentOrFutureDate(d: Date): boolean {
+  if (isNaN(d.getTime())) return false;
+
+  const now = new Date();
+  now.setMilliseconds(0);
+  d.setMilliseconds(0);
+
+  return d >= now;
+}
+
+export function userInDate(day: Date,conge: DemandeCongeItem[] ){
+    if(day.getDay() === 0 || day.getDay() === 6) {
+      return []
+    }else{
+      const dayN = normalize(day)
+      const matched = conge.filter((d: DemandeCongeItem) => {
+        const debut = normalize(new Date(d.dateDebut))
+        const fin = normalize(new Date(d.dateFin))
+
+        return dayN >= debut && dayN <= fin
+      })
+      return matched
+    }
+}
+
+
+
+

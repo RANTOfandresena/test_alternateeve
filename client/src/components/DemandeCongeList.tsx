@@ -1,7 +1,8 @@
 import { type DemandeCongeItem } from '../api/demandeConge';
 import { formatDate } from '../utils/date';
+import PageLoader from './elements/PageLoader';
 
-const statutClasses: Record<DemandeCongeItem['statut'], string> = {
+export const statutClasses: Record<any, string> = {
   EN_ATTENTE: 'bg-amber-100 text-amber-800 border-amber-200',
   ACCEPTE: 'bg-green-100 text-green-800 border-green-200',
   REFUSE: 'bg-rose-100 text-rose-800 border-rose-200',
@@ -17,9 +18,7 @@ const DemandeCongeList = ({ items, loading, error }: Props) => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl shadow-slate-200/80 p-6">
-        <p className="text-slate-600 text-sm">Chargement des demandes...</p>
-      </div>
+      <PageLoader/>
     );
   }
 
@@ -34,7 +33,7 @@ const DemandeCongeList = ({ items, loading, error }: Props) => {
   if (!items.length) {
     return (
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl shadow-slate-200/80 p-6">
-        <h3 className="text-lg font-semibold text-slate-900">Mes demandes</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Demandes</h3>
         <p className="mt-2 text-slate-600 text-sm">Aucune demande de congé pour le moment.</p>
       </div>
     );
@@ -43,7 +42,7 @@ const DemandeCongeList = ({ items, loading, error }: Props) => {
   return (
     <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl shadow-slate-200/80 p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-900">Mes demandes</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Demandes</h3>
         <span className="text-xs text-slate-500">
           Total : {items.length}
         </span>
@@ -54,12 +53,12 @@ const DemandeCongeList = ({ items, loading, error }: Props) => {
             <div className="flex-1 space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-slate-900">
-                  {item.type.toLowerCase().replace('_', ' ')}
+                  {item.type?.toLowerCase().replace('_', ' ')}
                 </span>
                 <span
-                  className={`text-xs font-semibold px-2 py-1 rounded-full border ${statutClasses[item.statut]}`}
+                  className={`text-xs font-semibold px-2 py-1 rounded-full border ${item.statut && statutClasses[item.statut]}`}
                 >
-                  {item.statut.replace('_', ' ')}
+                  {item.statut?.replace('_', ' ')}
                 </span>
               </div>
               <p className="text-sm text-slate-700">
@@ -69,9 +68,9 @@ const DemandeCongeList = ({ items, loading, error }: Props) => {
                 <p className="text-sm text-slate-500">Motif: {item.commentaire}</p>
               )}
             </div>
-            <div className="text-xs text-slate-500 whitespace-nowrap">
+            {item.dateCreation && <div className="text-xs text-slate-500 whitespace-nowrap">
               Créée le {formatDate(item.dateCreation)}
-            </div>
+            </div>}
           </div>
         ))}
       </div>

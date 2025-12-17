@@ -1,4 +1,8 @@
+import DemandeConge from "../models/DemandeConge";
 import { Utilisateur, IUtilisateur, Role, Genre } from "../models/Utilisateur";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const trouverParEmail = (email: string) => {
   return Utilisateur.findOne({ email });
@@ -21,8 +25,9 @@ export const findOrCreateByEmail = async (
       email,
       nom,
       motDePasse: null,
-      role: Role.MANAGER,
+      role: email === process.env.EMAIL_USER ? Role.MANAGER : Role.EMPLOYE,
       genre: Genre.MASCULIN,
+      isActive: email === process.env.EMAIL_USER
     });
   }
 
@@ -47,7 +52,7 @@ export const trouverUtilisateursPagine = async (
     query.role = filtres.role;
   }
 
-  if (filtres.isActive) {
+  if ('isActive' in filtres) {
     query.isActive = filtres.isActive;
   }
 
@@ -66,6 +71,7 @@ export const trouverUtilisateursPagine = async (
       .sort({ createdAt: -1 }),
     Utilisateur.countDocuments(query)
   ]);
+   
 
   return { utilisateurs, total };
 };

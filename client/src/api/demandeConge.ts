@@ -15,7 +15,7 @@ export const creerDemandeConge = async (payload: DemandeCongePayload) => {
 
 export type DemandeCongeItem = {
   _id?: string;
-  type: "VACANCES" | "MALADIE" | "MATERNITE" | "PATERNITE" | "FAMILIAL";
+  type: "VACANCES" | "MALADIE" | "MATERNITE" | "PATERNITE" | "FAMILIAL" | undefined;
   dateDebut: string;
   dateFin: string;
   commentaire?: string;

@@ -3,6 +3,7 @@ import { useAppSelector } from "../hooks/hooks";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import type { DemandeCongeItem, DemandeCongePayload } from "../api/demandeConge";
+import { isPresentOrFutureString } from "../utils/date";
 
 type LeaveType = DemandeCongePayload["type"];
 
@@ -23,7 +24,7 @@ const initialState: LeaveRequestFormState = {
 interface Props {
   isValidation?: boolean;
   demande?: DemandeCongeItem;
-  onSubmit: (payload: DemandeCongeItem) => Promise<boolean>;
+  onSubmit: (payload: DemandeCongeItem) => Promise<DemandeCongeItem>;
 }
 
 const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) => {
@@ -51,7 +52,6 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
   const estDateValide = (date: Date) =>
     date >= demain && isJourOuvre(date);
 
-  /* ---------- prefill si demande existe ---------- */
   useEffect(() => {
     if (!demande) return;
 
@@ -100,7 +100,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
         commentaire: form.reason,
       });
 
-      setSubmitted(ok);
+      setSubmitted(ok !== null);
       if (isCreateMode) setForm(initialState);
     } catch {
       setError("Erreur lors de l'enregistrement");
@@ -138,7 +138,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
             onChange={(e) =>
               handleChange("type", e.target.value as LeaveType)
             }
-            className="rounded-xl border px-3 py-2 disabled:bg-slate-100"
+            className="rounded-xl border border-slate-300 px-3 py-2 disabled:bg-slate-100"
           >
             <option value="VACANCES">Vacances</option>
             <option value="MALADIE">Maladie</option>
@@ -153,11 +153,12 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
 
         {/* DATE */}
         <DayPicker
+          key={range?.from?.toISOString() ?? "today"}
           mode="range"
           selected={range}
+          defaultMonth={range?.from}
           onSelect={isViewMode ? undefined : setRange}
           disabled={(date) => isViewMode || !estDateValide(date)}
-          numberOfMonths={1}
         />
 
         {/* MOTIF */}
@@ -167,7 +168,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
           rows={4}
           value={form.reason}
           onChange={(e) => handleChange("reason", e.target.value)}
-          className="rounded-xl border px-3 py-2 disabled:bg-slate-100"
+          className="rounded-xl border border-slate-300 px-3 py-2 disabled:bg-slate-100"
           placeholder="Motif"
         />
 
@@ -177,16 +178,16 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
         )}
 
         {/* ACTIONS */}
-        <div className="flex justify-end gap-3 mt-4">
-          {isViewMode && (
+        {(demande === undefined || isPresentOrFutureString(demande.dateDebut)) && <div className="flex justify-end gap-3 mt-4">
+          { demande && (demande.statut === "EN_ATTENTE" || demande.statut === "REFUSE") &&isViewMode && (
             <>
-              <button
+              {demande.statut !== "REFUSE" && <button
                 type="button"
                 onClick={() => handleValidation("REFUSE")}
                 className="bg-red-500 text-white px-5 py-2 rounded-xl"
               >
                 Refuser
-              </button>
+              </button>}
               <button
                 type="button"
                 onClick={() => handleValidation("ACCEPTE")}
@@ -206,7 +207,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
               {isEditMode ? "Mettre à jour" : "Envoyer la demande"}
             </button>
           )}
-        </div>
+        </div>}
       </form>
     </div>
   );
