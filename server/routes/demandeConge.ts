@@ -27,7 +27,7 @@ router.patch('/:id/accepter', requireAuth, requireRole(Role.MANAGER), accepterDe
 // Refuser une demande de congé (Manager)
 router.patch('/:id/refuser', requireAuth, requireRole(Role.MANAGER), refuserDemande);
 
-// PUT /demandes/:id => mise à jour d'une demande
-router.put("/:id", requireAuth, updateDemande);
+// patch /demandes/:id => mise à jour d'une demande
+router.patch("/:id", requireAuth, updateDemande);
 
 export default router;

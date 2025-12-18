@@ -4,7 +4,6 @@ import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { getMesDemandesConge, type DemandeCongeItem, type DemandeCongePayload } from "../api/demandeConge";
 import { formatLocalDate, isPresentOrFutureString } from "../utils/date";
-import { normalize } from "./elements/CalendrierConge";
 
 type LeaveType = DemandeCongePayload["type"];
 
@@ -34,7 +33,6 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
   const isViewMode = isValidation && !!demande;
   const isEditMode = !isValidation && !!demande;
   const isCreateMode = !isValidation && !demande;
-  const listParams = []
 
   const listParamsRef = useRef<Set<string>>(new Set());
 
@@ -54,8 +52,8 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
     return day !== 0 && day !== 6;
   };
 
-  const estDateValide = (date: Date) =>
-    date >= demain && isJourOuvre(date);
+  const estDateValide = (date: Date) => date >= demain && isJourOuvre(date);
+
   useEffect(() => {
     if (!demande) return;
 
@@ -101,17 +99,22 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
 
     setLoading(true);
     try {
-      const ok = await onSubmit({
+      let data: DemandeCongeItem = {
         type: form.type,
         dateDebut: formatLocalDate(form.startDate),
         dateFin: formatLocalDate(form.endDate),
         commentaire: form.reason,
-      });
+      }
+      if(isEditMode)
+        data = {_id : demande._id, ...data}
+
+      const ok = await onSubmit(data);
       
 
       setSubmitted(ok !== null);
       if (isCreateMode) setForm(initialState);
-    } catch {
+    } catch(e) {
+      console.log(e)
       setError("Erreur lors de l'enregistrement");
     } finally {
       setLoading(false);
@@ -136,8 +139,9 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit }: Props) =>
     const params = `dateDu=${formatLocalDate(date)}&dateAu=${formatLocalDate(d)}`;
 
     if (!listParamsRef.current.has(params)) {
-      const demandes = await getMesDemandesConge(params);
-      setDemande(prev => [...prev, ...demandes]);
+      let demandesReponse = await getMesDemandesConge(params);
+      demandesReponse = demandesReponse.filter((dem) => dem.dateDebut !== demande?.dateDebut && dem.dateFin !== demande?.dateFin)
+      setDemande(prev => [...prev, ...demandesReponse]);
 
       listParamsRef.current.add(params);
     }

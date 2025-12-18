@@ -1,18 +1,7 @@
 import { useEffect, useState } from 'react';
-import { accepterDemandeConge, getAllDemandesConge, refuserDemandeConge} from '../../api/demandeConge';
+import { accepterDemandeConge, getAllDemandesConge, refuserDemandeConge, type DemandeCongeItem} from '../../api/demandeConge';
 import ManagerDemandes from '../../components/ManagerDemandes';
 
-
-export type DemandeCongeItem = {
-  _id?: string;
-  type: "VACANCES" | "MALADIE" | "MATERNITE" | "PATERNITE" | "FAMILIAL";
-  dateDebut: string;
-  dateFin: string;
-  commentaire?: string;
-  statut?: 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE';
-  dateCreation?: string;
-  employeId?: string;
-};
 
 const Demande = () => {
   const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);

@@ -8,10 +8,6 @@ export type DemandeCongePayload = {
   statut?:"EN_ATTENTE" | "ACCEPTE" | "REFUSE"
 };
 
-export const creerDemandeConge = async (payload: DemandeCongePayload) => {
-  const { data } = await api.post('/demande-conge', payload);
-  return data;
-};
 
 export type DemandeCongeItem = {
   _id?: string;
@@ -22,6 +18,15 @@ export type DemandeCongeItem = {
   statut?: 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE';
   dateCreation?: string;
   employeId?: string;
+};
+type UpdateDemandeResponse = {
+  message: string;
+  updatedDemande: DemandeCongeItem;
+};
+
+export const creerDemandeConge = async (payload: DemandeCongePayload) => {
+  const { data } = await api.post('/demande-conge', payload);
+  return data;
 };
 
 export const getMesDemandesConge = async (params = '') => {
@@ -48,7 +53,7 @@ export const updateDemandeConge = async (
   id: string,
   updateData: Partial<Omit<DemandeCongeItem, "statut">>
 ): Promise<DemandeCongeItem> => {
-  const { data } = await api.patch<DemandeCongeItem>( `/demande-conge/${id}`,updateData);
-  return data;
+  const { data } = await api.patch<UpdateDemandeResponse>( `/demande-conge/${id}`,updateData);
+  return data.updatedDemande;
 };
 

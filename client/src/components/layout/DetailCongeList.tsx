@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { fetchUsersFromIds } from "../../api/utilisateur/utilisateur";
-import { accepterDemandeConge, refuserDemandeConge, type DemandeCongeItem } from "../../api/demandeConge";
+import { accepterDemandeConge, refuserDemandeConge, updateDemandeConge, type DemandeCongeItem } from "../../api/demandeConge";
 import { formatDate, formatDateFromDate } from '../../utils/date';
 import Modal from "../elements/Modal";
 import PageLoader from "../elements/PageLoader";
 import DemandeCongeForm from "../DemandeCongeForm";
+import { useAppSelector } from "../../hooks/hooks";
 
 type DetailsCongeProps = {
   date: Date | null;
@@ -27,6 +28,7 @@ export const statutStyles = {
 };
 
 const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
+  const { isPageManager } = useAppSelector((state) => state.auth);
   const [users, setUsers] = useState<Record<string, IUtilisateur>>({});
   const [loading, setLoading] = useState(false);
   const [openModal,setOpenModal] = useState(false)
@@ -61,11 +63,16 @@ const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
   }, [conges]);
   const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
     let response;
-    if(data.statut === "ACCEPTE"){
-      response = await accepterDemandeConge(data._id!)
-    } else {
-      response = await refuserDemandeConge(data._id!)
+    if( isPageManager ){
+      if(data.statut === "ACCEPTE"){
+        response = await accepterDemandeConge(data._id!)
+      } else {
+        response = await refuserDemandeConge(data._id!)
+      }      
+    }else{
+      response = await updateDemandeConge(data._id!,data)
     }
+
     onUpdate(response)
     setOpenModal(false)
     return response
@@ -108,7 +115,7 @@ const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
           }
         >
           <DemandeCongeForm
-            isValidation={true}
+            isValidation={isPageManager}
             demande={selectConge}
             onSubmit={saveConge}
           />

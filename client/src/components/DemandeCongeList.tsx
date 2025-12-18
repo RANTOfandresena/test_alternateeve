@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { updateDemandeConge, type DemandeCongeItem } from '../api/demandeConge';
+import { type DemandeCongeItem } from '../api/demandeConge';
 import { formatDate } from '../utils/date';
 import DemandeCongeForm from './DemandeCongeForm';
 import Modal from './elements/Modal';
@@ -16,21 +16,21 @@ interface Props {
   items: DemandeCongeItem[];
   loading: boolean;
   error: string | null;
+  saveConge: (payload: DemandeCongeItem) => Promise<DemandeCongeItem>;
 }
 
-const DemandeCongeList = ({ items, loading, error }: Props) => {
+const DemandeCongeList = ({ items, loading, error, saveConge }: Props) => {
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [selectConge,setSelectConge] = useState<DemandeCongeItem | undefined>(undefined)
 
-  const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
-    if (!data._id) throw new Error("ID manquant");
-
-    const response = await updateDemandeConge(data._id, data);
-
-    if (!response) throw new Error("Impossible de mettre à jour la demande");
-
-    return response;
+  const passSaveConge = async (payload: DemandeCongeItem) => {
+    const result = await saveConge(payload);
+    if (result) {
+      setOpenModal(false);
+    }
+    return result;
   };
+
   const handleClick = (item: DemandeCongeItem)=>{
     setSelectConge(item)
     setOpenModal(true)
@@ -109,7 +109,7 @@ const DemandeCongeList = ({ items, loading, error }: Props) => {
         >
         <DemandeCongeForm
           demande={selectConge}
-          onSubmit={saveConge}
+          onSubmit={passSaveConge}
         />
       </Modal>
     </>
