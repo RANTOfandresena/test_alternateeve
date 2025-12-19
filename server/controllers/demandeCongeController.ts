@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import * as DemandeService from "../services/demandeCongeService";
 import { Types } from "mongoose";
-import DemandeConge from "../models/DemandeConge";
 
 export const createDemande = async (req: Request, res: Response) => {
   try {
@@ -31,7 +30,6 @@ export const getMyDemandes = async (req: Request, res: Response) => {
 export const getAllDemandes = async (req: Request, res: Response) => {
   try {
     const demandes = await DemandeService.recupererDemandes(req.query);
-    console.log(demandes);
     res.json(demandes);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
@@ -71,3 +69,15 @@ export const updateDemande = async (req: Request, res: Response) => {
     return res.status(400).json({ message: error.message });
   }
 }
+
+export const deleteDemandeConge = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    await DemandeService.deleteDemandeCongeService(req.params.id, req.user._id.toString());
+    res.status(204).send();
+  } catch (e: any) {
+    res.status(403).json({ message: e.message });
+  }
+};

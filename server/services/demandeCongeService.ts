@@ -59,3 +59,32 @@ export const  updateDemande = (id: string, employeId: string, data: Partial<Dema
   }
   return DemandeRepository.update(id, employeId, data);
 }
+
+export const deleteDemandeCongeService = async (
+  demandeId: string,
+  employeId: string
+) => {
+  const demande = await DemandeRepository.findById(demandeId, employeId);
+  if (!demande) {
+    throw new Error(
+      "Demande introuvable ou vous n’êtes pas autorisé à la supprimer."
+    );
+  }
+
+  if (demande.dateDebut < new Date()) {
+    throw new Error(
+      "Impossible de supprimer une demande dont la période a déjà commencé."
+    );
+  }
+
+  return DemandeRepository.deleteDemandeCongeById(demandeId);
+};
+
+function compterJoursOuvresSansDoublon( dateDebut: Date,dateFin: Date,employeId: Types.ObjectId): number {
+  const demandeIclue = DemandeRepository.trouverDemandesInclusesEntreDeuxDates({employeId, dateDebut, dateFin})
+  let total = 0;
+
+  
+
+  return total;
+}

@@ -28,7 +28,7 @@ const HomeLayout: React.FC = () => {
             changePage={() => dispatch(changePage())}
         />
 
-        <main className="flex-1 p-4 overflow-auto" style={{ height: 'calc(100vh - 64px)' }}>
+        <main className="flex-1 p-4 overflow-auto">
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

@@ -41,7 +41,25 @@ export const update = async (
   const { statut, ...dataToUpdate } = updateData;
   return DemandeConge.findOneAndUpdate(
     { _id: id, employeId },
-    { $set: dataToUpdate },
+    { $set: {...dataToUpdate, statut: StatutDemande.EN_ATTENTE} },
     { new: true }
   ).exec();
 };
+
+export const deleteDemandeCongeById = (id: string) => {
+  return DemandeConge.findByIdAndDelete(id);
+};
+
+export async function trouverDemandesInclusesEntreDeuxDates(params: {
+  employeId: Types.ObjectId | string;
+  dateDebut: Date;
+  dateFin: Date;
+}) {
+  const { employeId, dateDebut, dateFin } = params;
+
+  return DemandeConge.find({
+    employeId,
+    dateDebut: { $gte: dateDebut },
+    dateFin: { $lte: dateFin }
+  }).sort({ dateDebut: 1 });
+}

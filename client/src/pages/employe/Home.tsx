@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Plus } from 'lucide-react';
-import { creerDemandeConge, getMesDemandesConge, type DemandeCongeItem, type DemandeCongePayload } from '../../api/demandeConge';
+import { creerDemandeConge, deleteDemandeConge, getMesDemandesConge, updateDemandeConge, type DemandeCongeItem, type DemandeCongePayload } from '../../api/demandeConge';
 import DemandeCongeForm from '../../components/DemandeCongeForm';
 import DemandeCongeList from '../../components/DemandeCongeList';
 import StatistiquesConge from '../../components/StatistiquesConge';
@@ -27,6 +27,22 @@ const HomePage = () => {
       setLoading(false);
     }
   };
+  const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
+      if (!data._id) throw new Error("ID manquant");
+
+      const response = await updateDemandeConge(data._id, data);
+      if (!response) throw new Error("Impossible de mettre à jour la demande");
+
+      setDemandes(prev =>
+          prev.map(d =>
+              d._id === response._id
+                  ? response
+                  : d
+          )
+      );
+
+      return response;
+  };
 
   useEffect(() => {
     chargerDemandes();
@@ -38,6 +54,18 @@ const HomePage = () => {
     setOpenModal(false);
     return response;
   };
+  const deleteDemande = async ( selectCongeId: string ) =>{
+      try{
+          console.log("okok")
+          await deleteDemandeConge(selectCongeId);
+          setDemandes((prev) => {
+              return prev.filter((p) => p._id !== selectCongeId);
+          });
+          return true
+      } catch{
+          return false
+      }
+  }
 
   // Calcul des statistiques à partir des demandes
   const statistiques = calculerStatistiques(demandes);
@@ -65,6 +93,7 @@ const HomePage = () => {
           >
             <DemandeCongeForm
               onSubmit={creerDemande}
+              
             />
           </Modal>
 
@@ -78,6 +107,8 @@ const HomePage = () => {
               items={demandes}
               loading={loading}
               error={error}
+              saveConge={saveConge}
+              onDeleteDemande={deleteDemande}
             />
           </section>
         </div>

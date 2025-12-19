@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import CalendrierConge from "../../components/elements/CalendrierConge";
-import { getAllDemandesConge, type DemandeCongeItem } from "../../api/demandeConge";
+import { deleteDemandeConge, getAllDemandesConge, type DemandeCongeItem } from "../../api/demandeConge";
 import DetailCongeList from "../../components/layout/DetailCongeList";
 import PanelContainer from "../../components/layout/PannelContainner";
 import { userInDate } from "../../utils/date";
@@ -29,7 +29,20 @@ const Calendrier = () => {
   useEffect(() => {
     getAllDemandesConge().then(setDemandes);
   }, []);
-
+  const deleteDemande = async ( selectCongeId: string ) =>{
+    try{
+      await deleteDemandeConge(selectCongeId);
+      setDemandes((prev) => {
+          return prev.filter((p) => p._id !== selectCongeId);
+      });
+      setMatchedConges((prev) => {
+          return prev.filter((p) => p._id !== selectCongeId);
+      })
+      return true
+    } catch{
+      return false
+    }
+  }
   return (
     <div className="flex gap-6">
       {/* Calendrier */}
@@ -49,6 +62,7 @@ const Calendrier = () => {
           date={selectedDate}
           conges={matchedConges}
           onUpdate={upDateDemande}
+          onDeleteDemande={deleteDemande}
         />
       </PanelContainer>
     </div>

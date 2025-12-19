@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from 'mongoose';
+import { JourFerieModel } from './JourFerie';
 
 // Enum pour le type de congé
 export enum TypeConge {
@@ -26,6 +27,7 @@ export interface DemandeCongeInput {
 
 /** 🔹 DOCUMENT Mongo */
 export interface IDemandeConge extends Document, DemandeCongeInput {
+  nbJour:number;
   dateCreation: Date;
 }
 
@@ -58,11 +60,90 @@ const DemandeCongeSchema = new Schema<IDemandeConge>({
     required: true,
     default: StatutDemande.EN_ATTENTE
   },
+  nbJour:{
+    type: Number
+  },
   dateCreation: { 
     type: Date, 
     required: true,
     default: Date.now
   }
+});
+
+DemandeCongeSchema.pre<IDemandeConge>('save', async function () {
+  const start = new Date(this.dateDebut);
+  const end = new Date(this.dateFin);
+
+  let count = 0;
+  const current = new Date(start);
+
+  const years = Array.from(new Set([start.getFullYear(), end.getFullYear()]));
+  const joursFeries = await JourFerieModel.find({
+    year: { $in: years },
+  }).lean();
+
+  const joursFeriesSet = new Set(
+    joursFeries.map(j => {
+      const d = new Date(j.date);
+      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    })
+  );
+
+  while (current <= end) {
+    const day = current.getDay(); 
+    const key = `${current.getFullYear()}-${current.getMonth() + 1}-${current.getDate()}`;
+
+    if (day !== 0 && day !== 6 && !joursFeriesSet.has(key)) {
+      count++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  this.nbJour = count;
+});
+
+DemandeCongeSchema.pre('findOneAndUpdate', async function() {
+  const update: any = this.getUpdate();
+
+  const dateDebut = update.dateDebut || update.$set?.dateDebut;
+  const dateFin = update.dateFin || update.$set?.dateFin;
+
+  if (!dateDebut || !dateFin) return;
+
+  const start = new Date(dateDebut);
+  const end = new Date(dateFin);
+
+  const years = Array.from(new Set([start.getFullYear(), end.getFullYear()]));
+  const joursFeries = await JourFerieModel.find({
+    year: { $in: years },
+  }).lean();
+
+  const joursFeriesSet = new Set(
+    joursFeries.map(j => {
+      const d = new Date(j.date);
+      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    })
+  );
+
+  let count = 0;
+  const current = new Date(start);
+
+  while (current <= end) {
+    const day = current.getDay();
+    const key = `${current.getFullYear()}-${current.getMonth() + 1}-${current.getDate()}`;
+    if (day !== 0 && day !== 6 && !joursFeriesSet.has(key)) {
+      count++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  if (update.$set) {
+    update.$set.nbJour = count;
+  } else {
+    update.nbJour = count;
+  }
+
+  this.setUpdate(update);
 });
 
 const DemandeConge = model<IDemandeConge>('DemandeConge', DemandeCongeSchema);

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { login, register } from '../controllers/authContriller';
 import { loginGoogle } from '../controllers/authGoogleController';
+import dotenv from 'dotenv';
+dotenv.config()
 
 const router = Router();
 

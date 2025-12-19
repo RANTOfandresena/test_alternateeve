@@ -8,6 +8,7 @@ import {
   accepterDemande,
   refuserDemande,
   updateDemande,
+  deleteDemandeConge,
 } from '../controllers/demandeCongeController';
 
 const router = Router();
@@ -29,5 +30,8 @@ router.patch('/:id/refuser', requireAuth, requireRole(Role.MANAGER), refuserDema
 
 // patch /demandes/:id => mise à jour d'une demande
 router.patch("/:id", requireAuth, updateDemande);
+
+//suppression demande
+router.delete("/:id",requireAuth, deleteDemandeConge);
 
 export default router;

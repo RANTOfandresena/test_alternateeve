@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMesDemandesConge, updateDemandeConge, type DemandeCongeItem } from '../../api/demandeConge';
+import { deleteDemandeConge, getMesDemandesConge, updateDemandeConge, type DemandeCongeItem } from '../../api/demandeConge';
 import DemandeCongeList from "../../components/DemandeCongeList";
 import Modal from "../../components/elements/Modal";
 
@@ -33,6 +33,18 @@ const Demande = () => {
 
         return response;
     };
+    const deleteDemande = async ( selectCongeId: string ) =>{
+        try{
+            console.log("okok")
+            await deleteDemandeConge(selectCongeId);
+            setDemandes((prev) => {
+                return prev.filter((p) => p._id !== selectCongeId);
+            });
+            return true
+        } catch{
+            return false
+        }
+    }
 
     useEffect(() => {
         chargerDemandes();
@@ -44,7 +56,7 @@ const Demande = () => {
               loading={loading}
               error={error}
               saveConge={saveConge}
-              
+              onDeleteDemande={deleteDemande}
             />
         </div>
     );

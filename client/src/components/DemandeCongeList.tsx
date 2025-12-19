@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { type DemandeCongeItem } from '../api/demandeConge';
+import { deleteDemandeConge, type DemandeCongeItem } from '../api/demandeConge';
 import { formatDate } from '../utils/date';
 import DemandeCongeForm from './DemandeCongeForm';
 import Modal from './elements/Modal';
@@ -17,14 +17,16 @@ interface Props {
   loading: boolean;
   error: string | null;
   saveConge: (payload: DemandeCongeItem) => Promise<DemandeCongeItem>;
+  onDeleteDemande: (id: string) => Promise<boolean>
 }
 
-const DemandeCongeList = ({ items, loading, error, saveConge }: Props) => {
+const DemandeCongeList = ({ items, loading, error, saveConge, onDeleteDemande }: Props) => {
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [selectConge,setSelectConge] = useState<DemandeCongeItem | undefined>(undefined)
 
   const passSaveConge = async (payload: DemandeCongeItem) => {
     const result = await saveConge(payload);
+
     if (result) {
       setOpenModal(false);
     }
@@ -35,6 +37,17 @@ const DemandeCongeList = ({ items, loading, error, saveConge }: Props) => {
     setSelectConge(item)
     setOpenModal(true)
   }
+
+  const deleteDemande = async () =>{
+    if(!selectConge?._id) return false
+    const isDelete = await onDeleteDemande(selectConge?._id)
+    if(isDelete){
+      setOpenModal(false)
+      return true
+    }
+    return false
+  }
+
   if (loading) {
     return (
       <PageLoader/>
@@ -110,6 +123,7 @@ const DemandeCongeList = ({ items, loading, error, saveConge }: Props) => {
         <DemandeCongeForm
           demande={selectConge}
           onSubmit={passSaveConge}
+          onDeleteDemande={deleteDemande}
         />
       </Modal>
     </>

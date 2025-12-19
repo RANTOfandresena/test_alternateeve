@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DayButton, DayPicker, type DayButtonProps } from "react-day-picker";
 import { fr } from "date-fns/locale";
 import 'react-day-picker/dist/style.css';
 import type { DemandeCongeItem } from "../../api/demandeConge";
+import { getJoursFeriesByYear } from "../../api/jourFerie";
 
 type CalendrierCongeProps = {
   conge: DemandeCongeItem[];
@@ -17,12 +18,29 @@ export const normalize = (d: Date): Date => new Date(d.getFullYear(), d.getMonth
 
 
 const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
+  const [joursFerie, setJourFerie] = useState<Date[]>([]);
   const ranges = conge.map(d => ({
     name: d.statut,
     from: new Date(d.dateDebut),
     to: new Date(d.dateFin),
     user: d.employeId || "Inconnu"
   }));
+  useEffect(() => {
+    const loadJoursFeries = async () => {
+      const currentYear = new Date().getFullYear();
+      const nextYear = currentYear + 1;
+      const dataCurrent = await getJoursFeriesByYear(currentYear.toString());
+      const dataNext = await getJoursFeriesByYear(nextYear.toString());
+
+      const allFeries = [...dataCurrent, ...dataNext].map(j => {
+        const d = new Date(j.date);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      });
+      setJourFerie(allFeries);
+    };
+
+    loadJoursFeries();
+  }, []);
 
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
   const handleSelect = (day: Date) => {
@@ -45,7 +63,14 @@ const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
     EN_ATTENTE: ranges.filter(r => r.name === 'EN_ATTENTE').map(r => ({ from: r.from, to: r.to })),
     ACCEPTE: ranges.filter(r => r.name === 'ACCEPTE').map(r => ({ from: r.from, to: r.to })),
     REFUSE: ranges.filter(r => r.name === 'REFUSE').map(r => ({ from: r.from, to: r.to })),
-    weekend: (date: Date) => date.getDay() === 0 || date.getDay() === 6
+    weekend: (date: Date) => date.getDay() === 0 || date.getDay() === 6,
+    jourFerie: (date: Date) => joursFerie.some(d => d.getTime() === normalize(date).getTime()),
+    disabled: (date: Date) => {
+      const day = date.getDay();
+      const isWeekend = day === 0 || day === 6;
+      const isFerie = joursFerie.some(d => d.getTime() === normalize(date).getTime());
+      return isWeekend || isFerie;
+    },
   };
 
   const modifiersClassNames = {
@@ -53,7 +78,8 @@ const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
     ACCEPTE: 'bg-green-200 text-green-800 rounded-md',
     REFUSE: 'bg-red-200 text-red-800 rounded-md',
     selected: 'border-2 border-blue-500 !rounded-full',
-    weekend: '!bg-gray-100 !text-gray-400'
+    weekend: '!bg-gray-100 !text-gray-400',
+    jourFerie: '!bg-gray-100 !text-gray-400',
   };
 
   function DayButtonWithContext(props: DayButtonProps) {

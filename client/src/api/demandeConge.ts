@@ -57,3 +57,6 @@ export const updateDemandeConge = async (
   return data.updatedDemande;
 };
 
+export const deleteDemandeConge = async (id: string): Promise<void> => {
+  await api.delete(`/demande-conge/${id}`);
+};

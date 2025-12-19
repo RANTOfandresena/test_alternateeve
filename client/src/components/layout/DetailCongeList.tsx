@@ -11,6 +11,7 @@ type DetailsCongeProps = {
   date: Date | null;
   conges: DemandeCongeItem[];
   onUpdate: (data: DemandeCongeItem) => void;
+  onDeleteDemande: (id: string) => Promise<boolean>
 };
 
 export type IUtilisateur = {
@@ -27,7 +28,7 @@ export const statutStyles = {
   REFUSE: "bg-red-100 text-red-800 border border-gray-300",
 };
 
-const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
+const DetailCongeList = ({ date, conges, onUpdate, onDeleteDemande}: DetailsCongeProps) => {
   const { isPageManager } = useAppSelector((state) => state.auth);
   const [users, setUsers] = useState<Record<string, IUtilisateur>>({});
   const [loading, setLoading] = useState(false);
@@ -81,6 +82,15 @@ const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
     setSelectConge(conge)
     setOpenModal(true)
   }
+  const deleteDemande = async () =>{
+    if(!selectConge?._id) return false
+    const isDelete = await onDeleteDemande(selectConge?._id)
+    if(isDelete){
+      setOpenModal(false)
+      return true
+    }
+    return false
+  }
 
   if (!date) {
     return <div className="text-gray-400 italic">Sélectionnez une date</div>;
@@ -118,6 +128,7 @@ const DetailCongeList = ({ date, conges, onUpdate }: DetailsCongeProps) => {
             isValidation={isPageManager}
             demande={selectConge}
             onSubmit={saveConge}
+            onDeleteDemande={deleteDemande}
           />
         </Modal>
         

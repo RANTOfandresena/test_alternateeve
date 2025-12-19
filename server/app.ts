@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRouter from './routes/auth';
 import utilisateurRouter from './routes/utilisateur';
+import jourFerieRouter from './routes/JourFerie'
 import demandeConge from './routes/demandeConge'
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
@@ -34,6 +35,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/auth', authRouter);
 app.use('/utilisateur', utilisateurRouter);
 app.use('/demande-conge',demandeConge)
+app.use('/Jour-ferie',jourFerieRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(port, () => {
