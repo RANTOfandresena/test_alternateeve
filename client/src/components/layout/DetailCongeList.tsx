@@ -30,38 +30,10 @@ export const statutStyles = {
 
 const DetailCongeList = ({ date, conges, onUpdate, onDeleteDemande}: DetailsCongeProps) => {
   const { isPageManager } = useAppSelector((state) => state.auth);
-  const [users, setUsers] = useState<Record<string, IUtilisateur>>({});
   const [loading, setLoading] = useState(false);
   const [openModal,setOpenModal] = useState(false)
   const [selectConge,setSelectConge] = useState<DemandeCongeItem | undefined>(undefined)
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      if (!conges || conges.length === 0) return;
-
-      const ids = conges
-        .map((c) => c.employeId)
-        .filter((id): id is string => !!id);
-
-      if (ids.length === 0) return;
-
-      setLoading(true);
-      try {
-        const data: IUtilisateur[] = await fetchUsersFromIds(ids);
-        const userMap: Record<string, IUtilisateur> = {};
-        data.forEach((u: IUtilisateur) => {
-          userMap[u._id] = u;
-        });
-        setUsers(userMap);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUsers();
-  }, [conges]);
   const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
     let response;
     if( isPageManager ){
@@ -119,8 +91,8 @@ const DetailCongeList = ({ date, conges, onUpdate, onDeleteDemande}: DetailsCong
           }
           title={
             <div className="flex flex-col text-left">
-              <span className="font-medium text-slate-900">{users[selectConge.employeId!].nom}</span>
-              <span className="text-xs text-slate-500">{users[selectConge.employeId!].email}</span>
+              <span className="font-medium text-slate-900">{selectConge.employeId?.nom}</span>
+              <span className="text-xs text-slate-500">{selectConge.employeId?.email}</span>
             </div>
           }
         >
@@ -142,8 +114,6 @@ const DetailCongeList = ({ date, conges, onUpdate, onDeleteDemande}: DetailsCong
       ) : (
         <div className="space-y-3">
           {conges.map((c) => {
-            const user = c.employeId ? users[c.employeId] : null;
-
             return (
               <div
                 key={c._id}
@@ -153,7 +123,7 @@ const DetailCongeList = ({ date, conges, onUpdate, onDeleteDemande}: DetailsCong
                 {/* Header: employé + statut */}
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-semibold text-gray-700">
-                    {user ? user.nom : c.employeId || "Inconnu"}
+                    {c.employeId?.nom}
                   </span>
                   <span
                     className={`text-sm font-medium px-3 py-1 rounded-full ${c.statut && statutStyles[c.statut]}`}

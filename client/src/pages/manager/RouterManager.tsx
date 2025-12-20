@@ -18,7 +18,6 @@ export default function RouterManager() {
           <Route index element={<Home />} />
           <Route path="demande" element={<Demande />} />
           <Route path="calendrier" element={<Calendrier />} />
-          <Route path="profil" element={<Profil />} />
           <Route path="regle" element={<Regle />} />
           <Route path="employers" element={<Employer />} />
           <Route path="*" element={<div>Page non trouvée</div>} />

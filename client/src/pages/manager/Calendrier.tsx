@@ -14,6 +14,7 @@ const Calendrier = () => {
   const dateSelected = (date: Date) => {
     setSelectedDate(date);
     const matched = userInDate(date,demandes)
+    console.log(matched)
     setMatchedConges(matched);
     setOpenPannel(true)
   };

@@ -7,8 +7,19 @@ export type DemandeCongePayload = {
   commentaire?: string;
   statut?:"EN_ATTENTE" | "ACCEPTE" | "REFUSE"
 };
+type Employe = {
+  _id: string;
+  nom: string;
+  email: string
+}
 
-
+export interface DemandeCongeParams {
+  statut?: string;
+  employeId?: string;
+  dateDu?: string;
+  dateAu?: string;
+  search?: string;
+}
 export type DemandeCongeItem = {
   _id?: string;
   type: "VACANCES" | "MALADIE" | "MATERNITE" | "PATERNITE" | "FAMILIAL" | undefined;
@@ -16,8 +27,9 @@ export type DemandeCongeItem = {
   dateFin: string;
   commentaire?: string;
   statut?: 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE';
+  nbJour?: number;
   dateCreation?: string;
-  employeId?: string;
+  employeId?: Employe;
 };
 type UpdateDemandeResponse = {
   message: string;
@@ -33,11 +45,16 @@ export const getMesDemandesConge = async (params = '') => {
   const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me?' + params);
   return data;
 };
-
-export const getAllDemandesConge =  async () => {
-  const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/');
+export const getAllDemandesCongeFiltre = async (params?: DemandeCongeParams) => {
+  console.log(params)
+  const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me', { params });
   return data;
-}
+};
+export const getAllDemandesConge = async (params?: DemandeCongeParams) => {
+  console.log(params)
+  const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/', { params });
+  return data;
+};
 
 export const accepterDemandeConge = async (id: string) => {
   const { data } = await api.patch<DemandeCongeItem>(`/demande-conge/${id}/accepter`);

@@ -48,10 +48,10 @@ const AppNav: React.FC<Props> = ({ isLoggedIn, isPageManager, roleUser, changePa
             </NavLink>
           )}
 
-          <NavLink to={`/${type}/profil`} className={linkClass}>
+          {!isPageManager && (<NavLink to={`/${type}/profil`} className={linkClass}>
             <User size={18} />
             Profil
-          </NavLink>
+          </NavLink>)}
 
           <NavLink to={`/${type}/regle`} className={linkClass}>
             <Settings size={18} />

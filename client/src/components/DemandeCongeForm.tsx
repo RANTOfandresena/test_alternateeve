@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useAppSelector } from "../hooks/hooks";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { fr } from "date-fns/locale";
@@ -33,7 +32,6 @@ interface Props {
 }
 
 const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDemande }: Props) => {
-  const { user } = useAppSelector((state) => state.auth);
   const [joursFerie, setJourFerie] = useState<Date[]>([]);
 
   const isViewMode = isValidation && !!demande;
@@ -50,8 +48,6 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
   const [demandes,setDemande] = useState<DemandeCongeItem[]>([])
   const [openModal, setOpenModal] = useState<boolean>(false)
 
-
-  /* ---------- dates ---------- */
   const demain = new Date();
   demain.setDate(demain.getDate() + 1);
 
@@ -116,7 +112,6 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     loadJoursFeries();
   }, []);
 
-  /* ---------- submit création / édition ---------- */
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -150,7 +145,6 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     }
   };
 
-  /* ---------- validation manager ---------- */
   const handleValidation = async (statut: "ACCEPTE" | "REFUSE") => {
     setLoading(true);
     try {
@@ -165,7 +159,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     const d = new Date(date);
     d.setMonth(d.getMonth() + 1);
 
-    const params = `dateDu=${formatLocalDate(date)}&dateAu=${formatLocalDate(d)}`;
+    const params = `dateDu=${formatLocalDate(date)}&dateAu=${formatLocalDate(d)}&excludeRefuse=true`;
 
     if (!listParamsRef.current.has(params)) {
       let demandesReponse = await getMesDemandesConge(params);
@@ -260,12 +254,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
           >
             <option value="VACANCES">Vacances</option>
             <option value="MALADIE">Maladie</option>
-            {user?.user.genre === "FEMININ" ? (
-              <option value="MATERNITE">Maternité</option>
-            ) : (
-              <option value="PATERNITE">Paternité</option>
-            )}
-            <option value="FAMILIAL">Familial</option>
+            <option value="ABSENCE">Abcence</option>
           </select>
         </label>
 
@@ -287,11 +276,10 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
             onMonthChange={onMonthChange}
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
-            disabled={(date) => isViewMode || (demande && !isPresentOrFutureString(demande.dateDebut)) || !estDateValide(date) || joursReserves.some(d => d.toDateString() === date.toDateString())}
+            disabled={(date) => isViewMode || (demande && !isPresentOrFutureString(demande.dateDebut)) || !estDateValide(date) || joursReserves.some(d => d.toDateString() === date.toDateString()) || joursFerie.some(d => d.getTime() === normalize(date).getTime())}
           />
         </div>
 
-        {/* MOTIF */}
         <textarea
           disabled={isViewMode || (demande && !isPresentOrFutureString(demande.dateDebut))}
           required
@@ -306,8 +294,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
         {submitted && !error && (
           <p className="text-green-600 text-sm">Enregistré avec succès</p>
         )}
-
-        {/* ACTIONS */}
+        
         {(demande === undefined || isPresentOrFutureString(demande.dateDebut)) && 
           <>
             { demande && (demande.statut === "EN_ATTENTE" || demande.statut === "REFUSE") && isViewMode && (
@@ -342,7 +329,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
                   <div />
                 )}
 
-                '<button
+                <button
                   type="submit"
                   disabled={loading}
                   className="bg-blue-600 text-white px-6 py-3 rounded-xl cursor-pointer"

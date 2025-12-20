@@ -5,6 +5,7 @@ import DemandeCongeForm from './DemandeCongeForm';
 import Modal from './elements/Modal';
 import PageLoader from './elements/PageLoader';
 import { statutStyles } from './layout/DetailCongeList';
+import { useAppSelector } from '../hooks/hooks';
 
 export const statutClasses: Record<any, string> = {
   EN_ATTENTE: 'bg-amber-100 text-amber-800 border-amber-200',
@@ -21,6 +22,7 @@ interface Props {
 }
 
 const DemandeCongeList = ({ items, loading, error, saveConge, onDeleteDemande }: Props) => {
+  const { isPageManager } = useAppSelector((stat) => stat.auth)
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [selectConge,setSelectConge] = useState<DemandeCongeItem | undefined>(undefined)
 
@@ -66,7 +68,7 @@ const DemandeCongeList = ({ items, loading, error, saveConge, onDeleteDemande }:
     return (
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl shadow-slate-200/80 p-6">
         <h3 className="text-lg font-semibold text-slate-900">Demandes</h3>
-        <p className="mt-2 text-slate-600 text-sm">Aucune demande de congé pour le moment.</p>
+        <p className="mt-2 text-slate-600 text-sm">Aucune demande de congé.</p>
       </div>
     );
   }
@@ -121,6 +123,7 @@ const DemandeCongeList = ({ items, loading, error, saveConge, onDeleteDemande }:
         title="Demande de Congé"
         >
         <DemandeCongeForm
+          isValidation={isPageManager}
           demande={selectConge}
           onSubmit={passSaveConge}
           onDeleteDemande={deleteDemande}

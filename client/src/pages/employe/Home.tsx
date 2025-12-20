@@ -7,10 +7,8 @@ import StatistiquesConge from '../../components/StatistiquesConge';
 import { useAppSelector } from '../../hooks/hooks';
 import { calculerStatistiques } from '../../utils/statistiquesUtils';
 import Modal from '../../components/elements/Modal';
-import CalendrierConge from '../../components/elements/CalendrierConge';
 
 const HomePage = () => {
-  const { user } = useAppSelector((state) => state.auth);
 
   const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,9 +69,10 @@ const HomePage = () => {
   const statistiques = calculerStatistiques(demandes);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      <div className="px-4 py-10 md:py-14">
+    <div className="flex-1 overflow-auto"> 
+      <div className="px-4 py-10 md:py-14 min-h-0">
         <div className="max-w-5xl mx-auto space-y-8">
+          
           {/* Bouton ouverture modal */}
           <section className="flex justify-center">
             <button
@@ -91,26 +90,27 @@ const HomePage = () => {
             onClose={() => setOpenModal(false)}
             title="Nouvelle demande de congé"
           >
-            <DemandeCongeForm
-              onSubmit={creerDemande}
-              
-            />
+            <DemandeCongeForm onSubmit={creerDemande} />
           </Modal>
 
           {/* Section Statistiques */}
           <section className="flex justify-center">
             <StatistiquesConge stats={statistiques} />
           </section>
+
           {/* Section Liste des demandes */}
           <section className="flex justify-center">
-            <DemandeCongeList
-              items={demandes}
-              loading={loading}
-              error={error}
-              saveConge={saveConge}
-              onDeleteDemande={deleteDemande}
-            />
+            <div className="w-full max-h-[600px] overflow-auto">
+              <DemandeCongeList
+                items={demandes}
+                loading={loading}
+                error={error}
+                saveConge={saveConge}
+                onDeleteDemande={deleteDemande}
+              />
+            </div>
           </section>
+
         </div>
       </div>
     </div>

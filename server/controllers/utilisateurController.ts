@@ -2,6 +2,7 @@
 
 import { Request, Response } from "express";
 import * as UtilisateurService from "../services/utilisateurService";
+import * as DemandeService from "../services/demandeCongeService";
 
 export const allUsers = async (req: Request, res: Response) => {
   try {
@@ -50,6 +51,19 @@ export const getUsersFromIds = async (req: Request, res: Response) => {
 
     const users = await UtilisateurService.getUsersFromIds(idUser);
     res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}
+
+export async function getProfilController(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+
+    const profil = await DemandeService.getProfilUtilisateurResume(user);
+    res.json(profil);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Erreur serveur' });

@@ -68,3 +68,4 @@ export const mettreAJourRoleUtilisateurService = async (userId: string, role: Ro
 export const getUsersFromIds= async (id_users: string[]): Promise<IUtilisateur[]> => {
   return UtilisateurRepository.findByIds(id_users);
 }
+

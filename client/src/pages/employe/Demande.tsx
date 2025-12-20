@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { deleteDemandeConge, getMesDemandesConge, updateDemandeConge, type DemandeCongeItem } from '../../api/demandeConge';
+import { deleteDemandeConge, getAllDemandesCongeFiltre, getMesDemandesConge, updateDemandeConge, type DemandeCongeItem } from '../../api/demandeConge';
 import DemandeCongeList from "../../components/DemandeCongeList";
-import Modal from "../../components/elements/Modal";
+import FiltreDemandesConge from "../../components/elements/FiltreDemandesConge";
 
 const Demande = () => {
     const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const chargerDemandes = async () => {
+    const chargerDemandes = async (params = {}) => {
         try {
-            const data = await getMesDemandesConge();
+            const data = await getAllDemandesCongeFiltre(params);
             setDemandes(data);
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Erreur de chargement');
@@ -35,7 +35,6 @@ const Demande = () => {
     };
     const deleteDemande = async ( selectCongeId: string ) =>{
         try{
-            console.log("okok")
             await deleteDemandeConge(selectCongeId);
             setDemandes((prev) => {
                 return prev.filter((p) => p._id !== selectCongeId);
@@ -50,14 +49,19 @@ const Demande = () => {
         chargerDemandes();
     }, []);
     return (
-        <div >
-            <DemandeCongeList
-              items={demandes}
-              loading={loading}
-              error={error}
-              saveConge={saveConge}
-              onDeleteDemande={deleteDemande}
-            />
+        <div className="bg-linear-to-b from-slate-50 to-slate-100 min-h-full">
+            <section className="flex flex-col items-center gap-6">
+            <FiltreDemandesConge onFiltrer={chargerDemandes} />
+            <div className="w-full max-h-[400px] overflow-y-auto">
+                <DemandeCongeList
+                items={demandes}
+                loading={loading}
+                error={error}
+                saveConge={saveConge}
+                onDeleteDemande={deleteDemande}
+                />
+            </div>
+            </section>
         </div>
     );
 }

@@ -19,16 +19,21 @@ export const creerDemande = async (data: {
   });
 };
 
-export const recupererDemandes = (params: any) => {
-  const { statut, employeId, dateDu, dateAu } = params;
+export const recupererDemandes = async (params: any) => {
+  const { statut, employeId, dateDu, dateAu, type, search, excludeRefuse } = params;
   const filter: any = {};
 
   if (statut && Object.values(StatutDemande).includes(statut)) {
     filter.statut = statut;
+  } else if (excludeRefuse) {
+    filter.statut = { $ne: StatutDemande.REFUSE };
   }
 
   if (employeId) {
     filter.employeId = employeId;
+  }
+  if(type){
+    filter.type = type
   }
 
   if (dateDu && dateAu) {
@@ -36,12 +41,13 @@ export const recupererDemandes = (params: any) => {
     const end = new Date(dateAu);
 
     filter.$or = [
-      { dateDebut: { $gte: start, $lte: end } },
-      { dateFin: { $gte: start, $lte: end } }
+      { dateDebut: { $lte: end, $gte: start } },
+      { dateFin: { $lte: end, $gte: start } },
+      { dateDebut: { $lte: start }, dateFin: { $gte: end } }
     ];
   }
 
-  return DemandeRepository.trouverDemandes(filter);
+  return DemandeRepository.trouverDemandes(filter, search);
 };
 
 export const accepterDemande = (id: string) => {
@@ -80,11 +86,44 @@ export const deleteDemandeCongeService = async (
   return DemandeRepository.deleteDemandeCongeById(demandeId);
 };
 
-function compterJoursOuvresSansDoublon( dateDebut: Date,dateFin: Date,employeId: Types.ObjectId): number {
-  const demandeIclue = DemandeRepository.trouverDemandesInclusesEntreDeuxDates({employeId, dateDebut, dateFin})
-  let total = 0;
 
-  
+export async function getProfilUtilisateurResume(user) {
+  const demandes = await DemandeRepository.getDemandesByUserId(user._id);
 
-  return total;
+  const totalDemandes = demandes.length;
+  const totalJours = demandes.reduce((acc, d) => acc + (d.nbJour || 0), 0);
+
+  const statsParStatut: Record<string, number> = {};
+  Object.values(StatutDemande).forEach(statut => {
+    statsParStatut[statut] = demandes.filter(d => d.statut === statut).length;
+  });
+
+  const statsParType: Record<string, number> = {};
+  Object.values(TypeConge).forEach(type => {
+    statsParType[type] = demandes.filter(d => d.type === type).length;
+  });
+
+  const dernieresDemandes = demandes.slice(0, 3).map(d => ({
+    id: d._id,
+    type: d.type,
+    dateDebut: d.dateDebut,
+    dateFin: d.dateFin,
+    nbJour: d.nbJour,
+    statut: d.statut,
+    commentaire: d.commentaire
+  }));
+
+  return {
+    id: user._id,
+    nom: user.nom,
+    email: user.email,
+    genre: user.genre,
+    role: user.role,
+    isActive: user.isActive,
+    totalDemandes,
+    totalJours,
+    statsParStatut,
+    statsParType,
+    dernieresDemandes
+  };
 }
