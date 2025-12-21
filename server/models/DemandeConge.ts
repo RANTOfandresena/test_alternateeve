@@ -1,5 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose';
 import { JourFerieModel } from './JourFerie';
+import { Utilisateur } from './Utilisateur';
+import { EmployePeuple } from '../repository/demandeCongeRepository';
 
 // Enum pour le type de congé
 export enum TypeConge {
@@ -17,14 +19,13 @@ export enum StatutDemande {
 
 /** 🔹 INPUT = données de création */
 export interface DemandeCongeInput {
-  employeId: Types.ObjectId | string; 
+  employeId: Types.ObjectId | EmployePeuple; 
   type: TypeConge;
   dateDebut: Date;
   dateFin: Date;
   commentaire?: string;
   statut: StatutDemande;
 }
-
 /** 🔹 DOCUMENT Mongo */
 export interface IDemandeConge extends Document, DemandeCongeInput {
   nbJour:number;
@@ -99,14 +100,25 @@ DemandeCongeSchema.pre<IDemandeConge>('save', async function () {
     current.setDate(current.getDate() + 1);
   }
 
+  const employe = await Utilisateur.findById(this.employeId).lean();
+  if (!employe) {
+    throw new Error("Employé introuvable");
+  }
+
+  if (employe.soldeConge - count < 0) {
+    throw new Error("Solde de congé insuffisant");
+  }
+
   this.nbJour = count;
 });
 
 DemandeCongeSchema.pre('findOneAndUpdate', async function() {
   const update: any = this.getUpdate();
+  const query: any = this.getQuery(); 
 
   const dateDebut = update.dateDebut || update.$set?.dateDebut;
   const dateFin = update.dateFin || update.$set?.dateFin;
+  const employeId = query.employeId;
 
   if (!dateDebut || !dateFin) return;
 
@@ -131,10 +143,20 @@ DemandeCongeSchema.pre('findOneAndUpdate', async function() {
   while (current <= end) {
     const day = current.getDay();
     const key = `${current.getFullYear()}-${current.getMonth() + 1}-${current.getDate()}`;
+
     if (day !== 0 && day !== 6 && !joursFeriesSet.has(key)) {
       count++;
     }
     current.setDate(current.getDate() + 1);
+  }
+
+  const employe = await Utilisateur.findById(employeId).lean();
+  if (!employe) {
+    throw new Error("Employé introuvable");
+  }
+
+  if (employe.soldeConge - count < 0) {
+    throw new Error("Solde de congé insuffisant");
   }
 
   if (update.$set) {
@@ -148,4 +170,3 @@ DemandeCongeSchema.pre('findOneAndUpdate', async function() {
 
 const DemandeConge = model<IDemandeConge>('DemandeConge', DemandeCongeSchema);
 export default DemandeConge;
-

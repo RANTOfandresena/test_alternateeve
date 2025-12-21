@@ -2,7 +2,7 @@ import { useAppSelector } from "../../hooks/hooks";
 import PageLoader from "../../components/elements/PageLoader";
 import { useState, useEffect } from "react";
 import { getProfilUtilisateur, type ProfilUtilisateur } from "../../api/utilisateur/utilisateur";
-import { User, Mail, Calendar, TrendingUp, Clock, FileText } from "lucide-react";
+import { User, Mail, Calendar, AlertCircle, TrendingUp, CheckCircle, Clock, FileText } from "lucide-react";
 
 const Profil = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -10,11 +10,20 @@ const Profil = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      getProfilUtilisateur()
-        .then((data) => setProfil(data))
-        .finally(() => setLoading(false));
-    }
+    if (!user) return;
+
+    const fetchProfil = async () => {
+      try {
+        const data = await getProfilUtilisateur();
+        setProfil(data);
+      } catch (e) {
+        console.log("Erreur", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfil();
   }, [user]);
 
   if (!user || loading || !profil) {
@@ -92,13 +101,16 @@ const Profil = () => {
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Moyenne / demande</p>
+              <p className="text-sm font-medium text-gray-600">Solde Congé restant</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">
-                {profil.totalDemandes > 0 ? (profil.totalJours / profil.totalDemandes).toFixed(1) : '0'}
+                {profil.nbJour}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center 
+              {profil.nbJour > 10 ? 'bg-green-100' : profil.nbJour > 5 ? 'bg-yellow-100' : 'bg-red-100'}">
+              {profil.nbJour > 10 && <TrendingUp className="w-6 h-6 text-green-600" />}
+              {profil.nbJour <= 10 && profil.nbJour > 5 && <AlertCircle className="w-6 h-6 text-yellow-600" />}
+              {profil.nbJour <= 5 && <CheckCircle className="w-6 h-6 text-red-600" />}
             </div>
           </div>
         </div>

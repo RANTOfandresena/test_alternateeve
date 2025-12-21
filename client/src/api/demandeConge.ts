@@ -10,7 +10,8 @@ export type DemandeCongePayload = {
 type Employe = {
   _id: string;
   nom: string;
-  email: string
+  email: string;
+  soldeConge: number;
 }
 
 export interface DemandeCongeParams {
@@ -46,7 +47,6 @@ export const getMesDemandesConge = async (params = '') => {
   return data;
 };
 export const getAllDemandesCongeFiltre = async (params?: DemandeCongeParams) => {
-  console.log(params)
   const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me', { params });
   return data;
 };

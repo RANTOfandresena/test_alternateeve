@@ -69,3 +69,22 @@ export const getUsersFromIds= async (id_users: string[]): Promise<IUtilisateur[]
   return UtilisateurRepository.findByIds(id_users);
 }
 
+export const updateUtilisateur = async (
+  id: string,
+  data: IUtilisateur
+) => {
+  if (data.soldeConge < 0) {
+    throw new Error("Le solde de congé ne peut pas être négatif");
+  }
+
+  const utilisateur = await UtilisateurRepository.updateUtilisateurById(
+    id,
+    data
+  );
+
+  if (!utilisateur) {
+    throw new Error("Utilisateur introuvable");
+  }
+
+  return utilisateur;
+};

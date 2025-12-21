@@ -6,6 +6,7 @@ import type { UtilisateurDto } from "../../utils/type";
 import Modal from "../../components/elements/Modal";
 import { UserRoleForm } from "../../components/UserRoleForm";
 import ProfilUser from "../ProfilUser";
+import UtilisateurModal from "../../components/UtilisateurModal";
 
 type Column<T> = {
   key: keyof T | "action";
@@ -62,7 +63,8 @@ const Employer = () => {
     ? [
         { key: "nom", label: "Nom" },
         { key: "email", label: "Email" },
-        { key: "role", label: "Rôle" }
+        { key: "role", label: "Rôle" },
+        { key: "soldeConge", label: "solde de congé (jour(s))"}
       ]
     : [
         { key: "nom", label: "Nom" },
@@ -83,11 +85,14 @@ const Employer = () => {
 
   return (
     <div className="p-6">
-      {selectedUser && (
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={isActiveFilter? selectedUser.nom : "Confirmation d'activation compte"}>
-          {isActiveFilter ? <ProfilUser user={selectedUser}/>:<UserRoleForm user={selectedUser} onSubmit={handleRoleSubmit} />}
-        </Modal>
-      )}
+      <UtilisateurModal
+        open={modalOpen}
+        utilisateur={selectedUser}
+        onClose={() => setModalOpen(false)}
+        onSave={(data) => {
+          console.log("DATA À SAUVER :", data);
+        }}
+      />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Employés</h1>
         <button

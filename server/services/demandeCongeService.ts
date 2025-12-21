@@ -1,6 +1,8 @@
 import { ObjectId, Types } from "mongoose";
-import { DemandeCongeInput, StatutDemande, TypeConge } from "../models/DemandeConge";
+import DemandeConge, { DemandeCongeInput, StatutDemande, TypeConge } from "../models/DemandeConge";
 import * as DemandeRepository from "../repository/demandeCongeRepository";
+import * as UtilisateurRepository from  "../repository/utilisateurRepository"
+import { IUtilisateur } from "../models/Utilisateur";
 
 export const creerDemande = async (data: {
   employeId: Types.ObjectId;
@@ -12,11 +14,13 @@ export const creerDemande = async (data: {
   if (!data.type || !data.dateDebut || !data.dateFin) {
     throw new Error("Champs requis manquants");
   }
-
-  return DemandeRepository.creerDemande({
+  console.log("creation")
+  const demande =await DemandeRepository.creerDemande({
     ...data,
     statut: StatutDemande.EN_ATTENTE
   });
+  await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, -demande.nbJour);
+  return demande;
 };
 
 export const recupererDemandes = async (params: any) => {
@@ -50,20 +54,62 @@ export const recupererDemandes = async (params: any) => {
   return DemandeRepository.trouverDemandes(filter, search);
 };
 
-export const accepterDemande = (id: string) => {
-  return DemandeRepository.changerStatut(id, StatutDemande.ACCEPTE);
-};
+export const accepterDemande = async (id: string) => {
+  const demande = await DemandeRepository.trouverParId(id);
 
-export const refuserDemande = (id: string) => {
-  return DemandeRepository.changerStatut(id, StatutDemande.REFUSE);
-};
-
-export const  updateDemande = (id: string, employeId: string, data: Partial<DemandeCongeInput>)=> {
-  const demande = DemandeRepository.findById(id, employeId);
   if (!demande) {
     throw new Error("Demande non trouvée ou vous n'avez pas la permission de la modifier.");
   }
-  return DemandeRepository.update(id, employeId, data);
+
+  // if (demande.statut !== StatutDemande.EN_ATTENTE) {
+  //   throw new Error("Cette demande a déjà été traitée.");
+  // }
+
+  if (demande.dateDebut < new Date()) {
+    throw new Error(
+      "Impossible de mettre à jour une demande dont la période a déjà commencé."
+    );
+  }
+
+  return await DemandeRepository.changerStatut(id, StatutDemande.ACCEPTE);
+};
+
+export const refuserDemande = async (id: string) => {
+  const demande = await DemandeRepository.trouverParId(id);
+  if (!demande) {
+    throw new Error("Demande non trouvée ou vous n'avez pas la permission de la modifier.");
+  }
+  if (demande.dateDebut < new Date()) {
+    throw new Error(
+      "Impossible de mettre une demande a jour dont la période a déjà commencé."
+    );
+  }
+  console.log("refuse")
+
+  await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, +demande.nbJour);
+
+  return DemandeRepository.changerStatut(id, StatutDemande.REFUSE);
+};
+
+export const  updateDemande = async (id: string, employeId: string, data: Partial<DemandeCongeInput>)=> {
+  const demande = await DemandeRepository.findById(id, employeId);
+  if (!demande) {
+    throw new Error("Demande non trouvée ou vous n'avez pas la permission de la modifier.");
+  }
+  if (demande.dateDebut < new Date()) {
+    throw new Error(
+      "Impossible de mettre une demande a jour dont la période a déjà commencé."
+    );
+  }
+  console.log("uodate")
+
+  await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, +demande.nbJour);
+  
+  const nvlDemande =await DemandeRepository.update(id, employeId, data);
+
+  await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, -nvlDemande.nbJour);
+  
+  return nvlDemande;
 }
 
 export const deleteDemandeCongeService = async (
@@ -82,12 +128,17 @@ export const deleteDemandeCongeService = async (
       "Impossible de supprimer une demande dont la période a déjà commencé."
     );
   }
+  console.log("delete")
+
+  if (demande.statut !== StatutDemande.REFUSE) {
+    await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, +demande.nbJour);
+  }
 
   return DemandeRepository.deleteDemandeCongeById(demandeId);
 };
 
 
-export async function getProfilUtilisateurResume(user) {
+export async function getProfilUtilisateurResume(user: IUtilisateur) {
   const demandes = await DemandeRepository.getDemandesByUserId(user._id);
 
   const totalDemandes = demandes.length;
@@ -120,6 +171,7 @@ export async function getProfilUtilisateurResume(user) {
     genre: user.genre,
     role: user.role,
     isActive: user.isActive,
+    nbJour: user.soldeConge,
     totalDemandes,
     totalJours,
     statsParStatut,

@@ -1,74 +1,81 @@
-import { Calendar, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { Calendar, CheckCircle, TrendingUp, FileText, AlertCircle, CalendarCheck } from 'lucide-react';
+import type { ProfilUtilisateur } from '../api/utilisateur/utilisateur';
 
-export type StatistiquesConge = {
-  joursRestants: number;
-  demandesAcceptees: number;
-  demandesRefusees: number;
-  demandesEnAttente: number;
-};
 
 interface StatistiquesCongeProps {
-  stats: StatistiquesConge;
+  stats: ProfilUtilisateur;
 }
 
 const StatistiquesConge = ({ stats }: StatistiquesCongeProps) => {
-  const statsCards = [
-    {
-      label: 'Jours restants',
-      value: stats.joursRestants,
-      icon: Calendar,
-      color: 'bg-blue-100 text-blue-800',
-      gradient: 'from-blue-500 to-blue-600',
-      bgLight: 'bg-blue-50',
-      textColor: 'text-blue-600'
-    },
-    {
-      label: 'Acceptées',
-      value: stats.demandesAcceptees,
-      icon: CheckCircle,
-      color: 'green',
-      gradient: 'from-green-500 to-green-600',
-      bgLight: 'bg-green-50',
-      textColor: 'text-green-600'
-    },
-    {
-      label: 'En attente',
-      color: 'bg-amber-100 text-amber-800',
-      icon: Clock,
-      gradient: 'from-amber-500 to-amber-600',
-      bgLight: 'bg-amber-50',
-      textColor: 'text-amber-600'
-    },
-    {
-      label: 'Refusées',
-      value: stats.demandesRefusees,
-      icon: XCircle,
-      color: 'red',
-      gradient: 'from-red-500 to-red-600',
-      bgLight: 'bg-red-50',
-      textColor: 'text-red-600'
-    }
-  ];
 
   return (
-<div className="flex flex-wrap gap-3">
-      {statsCards.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <div
-            key={stat.label}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${stat.color}`}
-          >
-            <Icon className="w-6 h-6" />
-            <div>
-              <div className="text-sm">{stat.label}</div>
-              <div className="font-semibold">{stat.value}</div>
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total demandes</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalDemandes}</p>
           </div>
-        );
-      })}
+          <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <FileText className="w-6 h-6 text-indigo-600" />
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total jours</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalJours}</p>
+          </div>
+          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <Calendar className="w-6 h-6 text-purple-600" />
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">
+              Solde Congé restant
+            </p>
+
+            <p
+              className={`text-3xl font-bold mt-2 ${
+                stats.nbJour > 10
+                  ? 'text-green-600'
+                  : stats.nbJour > 5
+                  ? 'text-yellow-600'
+                  : 'text-red-600'
+              }`}
+            >
+              {stats.nbJour}
+            </p>
+          </div>
+
+          <div
+            className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+              stats.nbJour > 10
+                ? 'bg-green-100'
+                : stats.nbJour > 5
+                ? 'bg-yellow-100'
+                : 'bg-red-100'
+            }`}
+          >
+            <CalendarCheck
+              className={`w-6 h-6 ${
+                stats.nbJour > 10
+                  ? 'text-green-600'
+                  : stats.nbJour > 5
+                  ? 'text-yellow-600'
+                  : 'text-red-600'
+              }`}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default StatistiquesConge;
+

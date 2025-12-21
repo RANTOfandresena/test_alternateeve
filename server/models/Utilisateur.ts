@@ -10,6 +10,7 @@ export enum Genre {
   FEMININ = 'FEMININ',
 }
 
+// Utilisateur
 export interface IUtilisateur extends Document {
   nom: string;
   email: string;
@@ -17,6 +18,7 @@ export interface IUtilisateur extends Document {
   genre: Genre;
   role: Role;
   isActive: boolean;
+  soldeConge: number;
 }
 
 export interface IUtilisateurMethods {
@@ -31,7 +33,8 @@ const UtilisateurSchema = new Schema<IUtilisateur, UtilisateurModel>({
   motDePasse: { type: String},
   genre: { type: String, enum: Object.values(Genre),default: Genre.MASCULIN, required: true },
   role: { type: String, enum: Object.values(Role), required: true },
-  isActive: { type: Boolean, default: false }
+  isActive: { type: Boolean, default: false },
+  soldeConge: { type: Number, default: 30 }
 });
 
 // UtilisateurSchema.pre('save', async function (this: HydratedDocument<IUtilisateur>) {

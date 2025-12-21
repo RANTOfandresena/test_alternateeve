@@ -4,17 +4,31 @@ import { creerDemandeConge, deleteDemandeConge, getMesDemandesConge, updateDeman
 import DemandeCongeForm from '../../components/DemandeCongeForm';
 import DemandeCongeList from '../../components/DemandeCongeList';
 import StatistiquesConge from '../../components/StatistiquesConge';
-import { useAppSelector } from '../../hooks/hooks';
-import { calculerStatistiques } from '../../utils/statistiquesUtils';
 import Modal from '../../components/elements/Modal';
+import { getProfilUtilisateur, type ProfilUtilisateur } from '../../api/utilisateur/utilisateur';
 
 const HomePage = () => {
-
+  const [profil, setProfil] = useState<ProfilUtilisateur | null>(null);
   const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
 
+  const fetchProfil = async () => {
+    try {
+      setLoading(true)
+      const data = await getProfilUtilisateur();
+      setProfil(data);
+    } catch (e) {
+      console.log("Erreur", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(()=>{
+    if(openModal) return
+    fetchProfil()
+  },[demandes])
   const chargerDemandes = async () => {
     try {
       const data = await getMesDemandesConge();
@@ -44,6 +58,7 @@ const HomePage = () => {
 
   useEffect(() => {
     chargerDemandes();
+    fetchProfil();
   }, []);
 
   const creerDemande = async (payload: DemandeCongeItem) => {
@@ -65,24 +80,24 @@ const HomePage = () => {
       }
   }
 
-  // Calcul des statistiques à partir des demandes
-  const statistiques = calculerStatistiques(demandes);
-
   return (
     <div className="flex-1 overflow-auto"> 
       <div className="px-4 py-10 md:py-14 min-h-0">
         <div className="max-w-5xl mx-auto space-y-8">
           
-          {/* Bouton ouverture modal */}
-          <section className="flex justify-center">
-            <button
-              onClick={() => setOpenModal(true)}
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-white font-semibold shadow-lg hover:bg-blue-700 transition"
-            >
-              <Plus className="w-5 h-5" />
-              Nouvelle demande de congé
-            </button>
-          </section>
+
+          <button
+            onClick={() => setOpenModal(true)}
+            className="group fixed bottom-6 right-6 flex items-center w-14 h-14 rounded-xl bg-blue-600 text-white shadow-lg overflow-hidden transition-all duration-150 hover:w-60"
+          >
+            <div className="flex items-center justify-center w-14 h-14 flex-shrink-0">
+                <Plus className="w-6 h-6" />
+            </div>
+
+            <span className="pr-4 text-xs font-medium whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                Nouvelle demande de congé
+            </span>
+          </button>
 
           {/* Modal formulaire */}
           <Modal
@@ -95,7 +110,7 @@ const HomePage = () => {
 
           {/* Section Statistiques */}
           <section className="flex justify-center">
-            <StatistiquesConge stats={statistiques} />
+            {profil && <StatistiquesConge stats={profil} />}
           </section>
 
           {/* Section Liste des demandes */}

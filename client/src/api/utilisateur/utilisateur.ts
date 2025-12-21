@@ -16,6 +16,7 @@ export interface ProfilUtilisateur {
   genre: 'MASCULIN' | 'FEMININ';
   role: 'EMPLOYE' | 'MANAGER';
   isActive: boolean;
+  nbJour: number;
   totalDemandes: number;
   totalJours: number;
   statsParStatut: Record<'EN_ATTENTE' | 'ACCEPTE' | 'REFUSE', number>;

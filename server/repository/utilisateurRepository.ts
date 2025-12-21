@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import DemandeConge from "../models/DemandeConge";
 import { Utilisateur, IUtilisateur, Role, Genre } from "../models/Utilisateur";
 import dotenv from "dotenv";
@@ -81,3 +82,46 @@ export const mettreAJourRoleUtilisateur = (userId: string, role: Role) => {
 export const findByIds = (ids: string[]): Promise<IUtilisateur[]> => {
   return Utilisateur.find({ _id: { $in: ids } });
 };
+export const trouverParId = async (id: Types.ObjectId | string) => {
+  return await Utilisateur.findById(id);
+}
+export const mettreAJourSoldeConge = async (
+  utilisateurId: Types.ObjectId | string,
+  delta: number
+) => {
+  if (delta === 0) return;
+
+  const utilisateur = await Utilisateur.findById(utilisateurId);
+
+  if (!utilisateur) {
+    throw new Error("Utilisateur introuvable");
+  }
+  console.log("-----------------------------------------------")
+  console.log("encien:",utilisateur.soldeConge,"delta:",delta)
+  const nouveauSolde = utilisateur.soldeConge + delta;
+
+  if (nouveauSolde < 0) {
+    throw new Error("Solde de congé insuffisant");
+  }
+
+  utilisateur.soldeConge = nouveauSolde;
+  await utilisateur.save();
+  console.log("nouveauSolde:",utilisateur.soldeConge)
+  console.log("---------------------------------------------")
+  return utilisateur.soldeConge;
+};
+
+export const updateUtilisateurById = (id: string,  data: IUtilisateur) => {
+  return Utilisateur.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        role: data.role,
+        isActive: data.isActive,
+        soldeConge: data.soldeConge,
+      },
+    },
+    { new: true }
+  ).exec();
+};
+

@@ -4,13 +4,14 @@ import DemandeConge, {
   IDemandeConge,
   StatutDemande
 } from "../models/DemandeConge";
+import * as UtilisateurRepository from "./utilisateurRepository";
 
-interface EmployePeuple {
+export interface EmployePeuple {
   _id: string;
   nom: string;
   email: string;
+  soldeConge: number;
 }
-
 
 async function normaliserStatut(demande: IDemandeConge) {
   if (
@@ -19,7 +20,23 @@ async function normaliserStatut(demande: IDemandeConge) {
   ) {
     demande.statut = StatutDemande.REFUSE;
     await demande.save();
+
+    const employeId = (demande.employeId as EmployePeuple)._id;
+    await UtilisateurRepository.mettreAJourSoldeConge(employeId, +demande.nbJour);
   }
+
+  if (demande.employeId && !(demande.employeId as EmployePeuple).soldeConge) {
+    const employe = await UtilisateurRepository.trouverParId(demande.employeId._id as Types.ObjectId);
+    if (employe) {
+      demande.employeId = {
+        _id: employe._id.toString(),
+        nom: employe.nom,
+        email: employe.email,
+        soldeConge: employe.soldeConge,
+      };
+    }
+  }
+
   return demande;
 }
 
@@ -27,16 +44,14 @@ async function normaliserListe(demandes: IDemandeConge[]) {
   return Promise.all(demandes.map(normaliserStatut));
 }
 
-
-export const creerDemande = (data: DemandeCongeInput) => {
+export const creerDemande = async (data: DemandeCongeInput) => {
   const demande = new DemandeConge(data);
-  return demande.save();
+  return normaliserStatut(await demande.save());
 };
 
 export const trouverParId = async (id: string) => {
-  const demande = await DemandeConge.findById(id);
+  const demande = await DemandeConge.findById(id).populate("employeId", "_id nom email soldeConge");
   if (!demande) return null;
-
   return normaliserStatut(demande);
 };
 
@@ -44,16 +59,18 @@ export const findById = async (
   id: string,
   employeId: string | Types.ObjectId
 ): Promise<IDemandeConge | null> => {
-  const demande = await DemandeConge.findOne({ _id: id, employeId }).exec();
+  const demande = await DemandeConge
+    .findOne({ _id: id, employeId })
+    .populate("employeId", "_id nom email soldeConge")
+    .exec();
   if (!demande) return null;
-
   return normaliserStatut(demande);
 };
 
 export const trouverDemandes = async (filter: any, search?: string) => {
   const demandes = await DemandeConge
     .find(filter)
-    .populate("employeId", "nom email")
+    .populate("employeId", "_id nom email soldeConge")
     .sort({ dateCreation: -1 });
 
   const normalisees = await normaliserListe(demandes);
@@ -64,7 +81,7 @@ export const trouverDemandes = async (filter: any, search?: string) => {
   const regex = new RegExp(escaped, "i");
 
   return normalisees.filter((d) => {
-    const employe = d.employeId as unknown as EmployePeuple | null;
+    const employe = d.employeId as EmployePeuple | null;
     return (
       (d.commentaire && regex.test(d.commentaire)) ||
       (employe && regex.test(employe.nom)) ||
@@ -74,11 +91,11 @@ export const trouverDemandes = async (filter: any, search?: string) => {
 };
 
 export const changerStatut = async (id: string, statut: string) => {
-  const demande = await DemandeConge.findById(id);
+  const demande = await DemandeConge.findById(id).populate("employeId", "_id nom email soldeConge");
   if (!demande) return null;
 
   demande.statut = statut as StatutDemande;
-  return demande.save();
+  return normaliserStatut(await demande.save());
 };
 
 export const update = async (
@@ -92,17 +109,17 @@ export const update = async (
     { _id: id, employeId },
     { $set: { ...dataToUpdate, statut: StatutDemande.EN_ATTENTE } },
     { new: true }
-  ).exec();
+  )
+    .populate("employeId", "_id nom email soldeConge")
+    .exec();
 
   if (!demande) return null;
-
   return normaliserStatut(demande);
 };
 
 export const deleteDemandeCongeById = (id: string) => {
   return DemandeConge.findByIdAndDelete(id);
 };
-
 
 export async function trouverDemandesInclusesEntreDeuxDates(params: {
   employeId: Types.ObjectId | string;
@@ -115,7 +132,9 @@ export async function trouverDemandesInclusesEntreDeuxDates(params: {
     employeId,
     dateDebut: { $gte: dateDebut },
     dateFin: { $lte: dateFin }
-  }).sort({ dateDebut: 1 });
+  })
+    .populate("employeId", "_id nom email soldeConge")
+    .sort({ dateDebut: 1 });
 
   return normaliserListe(demandes);
 }
@@ -125,6 +144,7 @@ export async function getDemandesByUserId(
 ) {
   const demandes = await DemandeConge
     .find({ employeId })
+    .populate("employeId", "_id nom email soldeConge")
     .sort({ dateCreation: -1 });
 
   return normaliserListe(demandes);

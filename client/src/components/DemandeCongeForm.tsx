@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { fr } from "date-fns/locale";
@@ -7,6 +7,9 @@ import { formatLocalDate, isPresentOrFutureString } from "../utils/date";
 import Modal from "./elements/Modal";
 import { getJoursFeriesByYear } from "../api/jourFerie";
 import { normalize } from "./elements/CalendrierConge";
+import Legend from "./elements/Legend";
+import { CalendarDays, Clock } from "lucide-react";
+import { getProfilUtilisateur } from "../api/utilisateur/utilisateur";
 
 type LeaveType = DemandeCongePayload["type"];
 
@@ -32,6 +35,7 @@ interface Props {
 }
 
 const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDemande }: Props) => {
+  
   const [joursFerie, setJourFerie] = useState<Date[]>([]);
 
   const isViewMode = isValidation && !!demande;
@@ -47,16 +51,26 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
   const [submitted, setSubmitted] = useState(false);
   const [demandes,setDemande] = useState<DemandeCongeItem[]>([])
   const [openModal, setOpenModal] = useState<boolean>(false)
+  const [nbJour,setNbJour] = useState<number>(0)
+  const [solde, setSolde] = useState<number>(0)
 
-  const demain = new Date();
-  demain.setDate(demain.getDate() + 1);
 
   const isJourOuvre = (date: Date) => {
     const day = date.getDay();
     return day !== 0 && day !== 6;
   };
 
-  const estDateValide = (date: Date) => date >= demain && isJourOuvre(date);
+  const estDateValide = (date: Date) => date >= new Date() && isJourOuvre(date);
+  const fetchProfil = async () => {
+    try {
+      const data = await getProfilUtilisateur();
+      setSolde(data.nbJour);
+    } catch (e) {
+      console.log("Erreur", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!demande) return;
@@ -72,6 +86,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
       from: new Date(demande.dateDebut),
       to: new Date(demande.dateFin),
     });
+    setNbJour(demande.nbJour!)
   }, [demande]);
 
   useEffect(() => {
@@ -86,6 +101,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
 
   useEffect(()=>{
     onMonthChange(range?.from ?? new Date())
+    fetchProfil()
   },[])
 
   const handleChange = <K extends keyof LeaveRequestFormState>(
@@ -107,10 +123,45 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());
       });
       setJourFerie(allFeries);
+      
     };
 
     loadJoursFeries();
   }, []);
+
+  useEffect(() => {
+    if (!range?.from || !range?.to) {
+      setNbJour(0);
+      console.log("-hayhayah")
+      return;
+    }
+
+    const count = calculerJoursOuvrables(range?.from, range?.to)
+
+    setNbJour(count);
+  }, [range, joursFerie]);
+  const calculerJoursOuvrables = (dateDebut: Date, dateFin: Date): number => {
+    let count = 0;
+    let current = normalize(new Date(dateDebut));
+
+    const end = normalize(new Date(dateFin));
+
+    while (current <= end) {
+      const day = current.getDay();
+      const isWeekend = day === 0 || day === 6;
+      const isFerie = joursFerie.some(
+        (f) => formatLocalDate(f) === formatLocalDate(current)
+      );
+
+      if (!isWeekend && !isFerie) {
+        count++;
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    return count;
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -155,7 +206,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     }
   };
 
-  const onMonthChange = async (date: Date) => {
+  const onMonthChange = useCallback(async (date: Date) => {
     const d = new Date(date);
     d.setMonth(d.getMonth() + 1);
 
@@ -168,7 +219,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
 
       listParamsRef.current.add(params);
     }
-  };
+  }, [demande?.dateDebut, demande?.dateFin]);
   const joursReserves: Date[] = demandes.flatMap(demande => {
     const start = new Date(demande.dateDebut);
     const end = new Date(demande.dateFin);
@@ -193,6 +244,51 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     jourFerie: (date: Date) => joursFerie.some(d => d.getTime() === normalize(date).getTime()),
   };
 
+  const handleRangeSelect = (newRange: DateRange | undefined) => {
+    if (!newRange?.from || !newRange?.to) return;
+    if (isViewMode) return;
+
+    if (!isRangeValid(newRange)) {
+      alert("Votre sélection contient des jours déjà réservés. Choisissez un autre range.");
+      return;
+    }
+
+    if (!hasSoldeSuffisant(newRange)) {
+      alert("Votre solde de congé est insuffisant.");
+      return;
+    }
+
+    setRange(newRange);
+  };
+  const hasSoldeSuffisant = (rangeP: DateRange): boolean => {
+    if(!rangeP.from || !rangeP.to) {
+      
+      return false
+    }
+    const soldeDisponible =
+      demande?.employeId?.soldeConge !== undefined && demande?.nbJour !== undefined
+        ? demande.employeId.soldeConge + demande.nbJour + 1
+        : solde;
+
+    const nbJours = calculerJoursOuvrables(rangeP.from, rangeP.to);
+
+    return nbJours <= soldeDisponible;
+  };
+
+  const isDateDisabled = (date: Date) => {
+    if (isViewMode) return true;
+
+    if (demande && !isPresentOrFutureString(demande.dateDebut)) return true;
+
+    if (!estDateValide(date)) return true;
+
+    if (joursReserves.some(d => formatLocalDate(d) === formatLocalDate(date))) return true;
+
+    if (joursFerie.some(d => formatLocalDate(d) === formatLocalDate(date))) return true;
+
+    return false;
+  };
+
   const modifiersClassNames = {
     deja_reserver: 'bg-yellow-200 text-blue-800 rounded-md',
     weekend: '!bg-gray-100 !text-gray-400',
@@ -204,7 +300,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     const start = range.from;
     const end = range.to;
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      if (joursReserves.some(r => r.toDateString() === d.toDateString())) {
+      if (joursReserves.some(r => formatLocalDate(r) === formatLocalDate(d))) {
         return false;
       }
     }
@@ -260,24 +356,52 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
 
         {/* DATE */}
         <div>
-          <DayPicker
-            locale={fr}
-            key={range?.from?.toISOString() ?? "today"}
-            mode="range"
-            selected={range}
-            defaultMonth={range?.from}
-            onSelect={(newRange) => {
-              if (!isViewMode && isRangeValid(newRange)) {
-                setRange(newRange);
-              } else {
-                alert("Votre sélection contient des jours déjà réservés. Choisissez un autre range.");
-              }
-            }}
-            onMonthChange={onMonthChange}
-            modifiers={modifiers}
-            modifiersClassNames={modifiersClassNames}
-            disabled={(date) => isViewMode || (demande && !isPresentOrFutureString(demande.dateDebut)) || !estDateValide(date) || joursReserves.some(d => d.toDateString() === date.toDateString()) || joursFerie.some(d => d.getTime() === normalize(date).getTime())}
-          />
+          <div className="flex gap-6">
+            {/* Calendrier à gauche */}
+            <div className="flex-1">
+              <DayPicker
+                locale={fr}
+                key={range?.from?.toISOString() ?? "today"}
+                mode="range"
+                selected={range}
+                defaultMonth={range?.from}
+                onSelect={handleRangeSelect}
+                onMonthChange={onMonthChange}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+                disabled={isDateDisabled}
+                required
+              />
+            </div>
+
+            {/* Colonne de stats à droite */}
+            <div className="flex flex-col justify-center gap-6">
+              {/* Jours sélectionnés */}
+              <div className="flex items-center gap-3 p-4 rounded-2xl shadow-md bg-white">
+                <CalendarDays className="w-8 h-8 text-indigo-500" />
+                <div className="flex flex-col items-center gap-1">
+                  <div className="text-xs text-gray-500 text-center">Nombre de jours</div>
+                  <div className="text-xl font-bold text-gray-800 text-center">{nbJour}</div>
+                </div>
+              </div>
+
+              {/* Jours restants */}
+              <div className="flex items-center gap-3 p-4 rounded-2xl shadow-md bg-white">
+                <Clock className="w-6 h-6 text-gray-400" />
+                <div className="flex flex-col items-center gap-1">
+                  <div className="text-xs text-gray-500 text-center">Solde congé restant</div>
+                  
+                  <div className="text-xl font-bold text-gray-800 text-center">
+                  {demande?.employeId?.soldeConge !== undefined && demande?.nbJour !== undefined
+                    ? demande.employeId.soldeConge + demande.nbJour - nbJour
+                    : solde - nbJour}
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Legend showCount={false} />
         </div>
 
         <textarea
@@ -329,13 +453,13 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
                   <div />
                 )}
 
-                <button
+                {range && hasSoldeSuffisant(range) && (<button
                   type="submit"
                   disabled={loading}
                   className="bg-blue-600 text-white px-6 py-3 rounded-xl cursor-pointer"
                 >
                   {isEditMode ? "Mettre à jour" : "Envoyer la demande"}
-                </button>'
+                </button>)}
               </div>
             )}
           </>

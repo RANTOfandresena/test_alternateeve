@@ -7,6 +7,7 @@ export interface UtilisateurDto {
   genre: string;
   role: string;
   isActive: boolean;
+  soldeConge: number;
   createdAt: string;
 }
 

@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import 'react-day-picker/dist/style.css';
 import type { DemandeCongeItem } from "../../api/demandeConge";
 import { getJoursFeriesByYear } from "../../api/jourFerie";
+import Legend from "./Legend";
 
 type CalendrierCongeProps = {
   conge: DemandeCongeItem[];
@@ -23,7 +24,10 @@ const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
     name: d.statut,
     from: new Date(d.dateDebut),
     to: new Date(d.dateFin),
-    user: d.employeId || "Inconnu"
+    user:
+      typeof d.employeId === "string"
+        ? d.employeId
+        : d.employeId?._id ?? "Inconnu"
   }));
   useEffect(() => {
     const loadJoursFeries = async () => {
@@ -90,8 +94,11 @@ const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
       <div className="relative w-10 h-10 flex items-center justify-center">
         <DayButton {...buttonProps} day={day} modifiers={modifiers} className=" flex items-center justify-center" />
         {userCount > 1 && (
-          <div className="absolute -top-1 -right-1">
-            <span className="flex items-center justify-center w-3 h-3 text-xs font-bold text-white bg-blue-500 rounded-full">
+          <div
+            className="absolute -top-1 -right-1"
+            title={`${userCount} employés en congé`}
+          >
+            <span className="flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-blue-500 rounded-full">
               {userCount}
             </span>
           </div>
@@ -113,6 +120,7 @@ const CalendrierConge = ({ conge, dateSelected}: CalendrierCongeProps) => {
         components={{ DayButton: DayButtonWithContext }}
         required
       />
+      <Legend/>
     </div>
   );
 };
