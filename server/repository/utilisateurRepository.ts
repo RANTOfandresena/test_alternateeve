@@ -16,7 +16,11 @@ export const creerUtilisateur = async (data: Partial<IUtilisateur>) => {
     throw new Error('Email déjà utilisé');
   }
 
-  const utilisateur = new Utilisateur(data);
+  const utilisateur = new Utilisateur({
+    ...data,
+    isActive: process.env.EMAIL_USER && data.email === process.env.EMAIL_USER,
+    role: process.env.EMAIL_USER && data.email === process.env.EMAIL_USER ? Role.MANAGER : Role.EMPLOYE
+  });
   return utilisateur.save();
 };
 
@@ -32,7 +36,8 @@ export const findOrCreateByEmail = async (
       email,
       nom,
       motDePasse: null,
-      isActive: email === process.env.EMAIL_USER
+      isActive: email === process.env.EMAIL_USER,
+      role: process.env.EMAIL_USER && email === process.env.EMAIL_USER ? Role.MANAGER : Role.EMPLOYE,
     });
   }
 
