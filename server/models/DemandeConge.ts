@@ -16,7 +16,6 @@ export enum StatutDemande {
   REFUSE = "REFUSE",
 }
 
-
 /** 🔹 INPUT = données de création */
 export interface DemandeCongeInput {
   employeId: Types.ObjectId | EmployePeuple; 

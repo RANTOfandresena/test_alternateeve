@@ -4,7 +4,7 @@ export const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Mon API',
+      title: '',
       version: '1.0.0',
       description: "Documentation de l'API avec Swagger",
     },
@@ -13,5 +13,6 @@ export const swaggerOptions = {
   apis: [
     path.join(__dirname, '../routes/*.ts'),
     path.join(__dirname, '../routes/*.js'),
+    path.join(__dirname, '../swagger/swaggerDefinitions.ts'),
   ],
 };

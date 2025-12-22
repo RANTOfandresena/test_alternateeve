@@ -1,7 +1,7 @@
 import api from './axiosInstance';
 
 export type DemandeCongePayload = {
-  type?: 'VACANCES' | 'MALADIE' | 'MATERNITE' | 'PATERNITE' | 'FAMILIAL';
+  type?: 'VACANCES' | 'MALADIE' | 'ABSENCE'
   dateDebut?: string;
   dateFin?: string;
   commentaire?: string;
@@ -23,7 +23,7 @@ export interface DemandeCongeParams {
 }
 export type DemandeCongeItem = {
   _id?: string;
-  type: "VACANCES" | "MALADIE" | "MATERNITE" | "PATERNITE" | "FAMILIAL" | undefined;
+  type:'VACANCES' | 'MALADIE' | 'ABSENCE' | undefined;
   dateDebut: string;
   dateFin: string;
   commentaire?: string;

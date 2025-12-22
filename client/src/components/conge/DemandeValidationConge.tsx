@@ -3,12 +3,7 @@ import { X, Save, AlertTriangle } from "lucide-react";
 import { Select, Textarea, Input } from "../elements/elements";
 import type { DemandeCongeItem } from "../../api/demandeConge";
 
-export type TypeConge =
-  | 'VACANCES'
-  | 'MALADIE'
-  | 'MATERNITE'
-  | 'PATERNITE'
-  | 'FAMILIAL'
+export type TypeConge =  'VACANCES' | 'MALADIE' | 'ABSENCE';
 
 export type StatutDemande =
   | "EN_ATTENTE"
