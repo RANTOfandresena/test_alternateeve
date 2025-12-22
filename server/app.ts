@@ -13,9 +13,12 @@ import { swaggerOptions } from './doc/swagger';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const mongoUrl = process.env.DB_URL;
 
-mongoose.connect('mongodb://127.0.0.1:27017/test_alternateeve');
+if (!mongoUrl) {
+  throw new Error("DB_URL is not defined in .env");
+}
+mongoose.connect(mongoUrl);
 
 const db = mongoose.connection;
 
@@ -38,6 +41,6 @@ app.use('/demande-conge',demandeConge)
 app.use('/Jour-ferie',jourFerieRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.listen(3000, () => {
+  console.log(`Server running on http://localhost:3000`);
 });

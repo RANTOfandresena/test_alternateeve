@@ -7,7 +7,10 @@ export const setStore = (store: { getState: () => RootState }) => {
   storeRef = store;
 };
 
-const api = axios.create({ baseURL: 'http://localhost:3000' });
+
+const api = axios.create({
+  baseURL: import.meta.env.REACT_APP_API_URL || 'http://localhost:3000',
+});
 
 api.interceptors.request.use((config) => {
   const token = storeRef?.getState().auth.user?.token;
