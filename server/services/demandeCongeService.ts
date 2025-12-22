@@ -3,6 +3,7 @@ import DemandeConge, { DemandeCongeInput, StatutDemande, TypeConge } from "../mo
 import * as DemandeRepository from "../repository/demandeCongeRepository";
 import * as UtilisateurRepository from  "../repository/utilisateurRepository"
 import { IUtilisateur } from "../models/Utilisateur";
+import { EmployePeuple } from "../repository/demandeCongeRepository";
 
 export const creerDemande = async (data: {
   employeId: Types.ObjectId;
@@ -14,7 +15,6 @@ export const creerDemande = async (data: {
   if (!data.type || !data.dateDebut || !data.dateFin) {
     throw new Error("Champs requis manquants");
   }
-  console.log("creation")
   const demande =await DemandeRepository.creerDemande({
     ...data,
     statut: StatutDemande.EN_ATTENTE
@@ -84,7 +84,6 @@ export const refuserDemande = async (id: string) => {
       "Impossible de mettre une demande a jour dont la période a déjà commencé."
     );
   }
-  console.log("refuse")
 
   await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, +demande.nbJour);
 
@@ -101,14 +100,16 @@ export const  updateDemande = async (id: string, employeId: string, data: Partia
       "Impossible de mettre une demande a jour dont la période a déjà commencé."
     );
   }
-  console.log("uodate")
 
   await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, +demande.nbJour);
   
   const nvlDemande =await DemandeRepository.update(id, employeId, data);
 
-  await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, -nvlDemande.nbJour);
-  
+  const soldeConge = await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, -nvlDemande.nbJour);
+  if (nvlDemande.employeId && typeof nvlDemande.employeId !== 'string' && '_id' in nvlDemande.employeId) {
+    (nvlDemande.employeId as EmployePeuple).soldeConge = soldeConge;
+  }
+
   return nvlDemande;
 }
 
@@ -128,7 +129,6 @@ export const deleteDemandeCongeService = async (
       "Impossible de supprimer une demande dont la période a déjà commencé."
     );
   }
-  console.log("delete")
 
   if (demande.statut !== StatutDemande.REFUSE) {
     await UtilisateurRepository.mettreAJourSoldeConge(demande.employeId._id, +demande.nbJour);

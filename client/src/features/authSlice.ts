@@ -30,12 +30,12 @@ const initialState: AuthState = {
   message: null,
 };
 
-// authSlice.ts
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials: { email: string; motDePasse: string }, { rejectWithValue }) => {
     try {
       const data = await login(credentials);
+      console.log("loginUser",data)
       return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Erreur de connexion');
@@ -48,6 +48,8 @@ export const loginGoogleUser = createAsyncThunk(
   async (code: string, { rejectWithValue }) => {
     try {
       const data = await loginGoogle(code);
+      console.log("loginGoogleUser",data)
+
       return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Erreur de connexion Google');
@@ -93,7 +95,20 @@ const authSlice = createSlice({
         state.error = null;
         state.message = null;
       })
+      .addCase(loginGoogleUser.fulfilled, (state, action: PayloadAction<User>) => {
+        console.log(action.payload)
+        state.loading = false;
+        state.user = action.payload;
+        state.isPageManager = action.payload.user.role === "MANAGER"
+        state.isLoggedIn = true;
+        state.message = null;
+      })
+      .addCase(loginGoogleUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
+        console.log(action.payload)
         state.loading = false;
         state.user = action.payload;
         state.isPageManager = action.payload.user.role === "MANAGER"

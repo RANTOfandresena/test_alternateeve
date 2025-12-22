@@ -101,7 +101,7 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 mt-2 hover:shadow-lg hover:shadow-blue-500/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 mt-2 hover:shadow-lg hover:shadow-blue-500/30 transition disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             disabled={loading || reduxLoading}
           >
             {loading || reduxLoading ? 'Connexion...' : 'Se connecter'}
@@ -111,10 +111,9 @@ const LoginPage = () => {
             <span>ou</span>
           </div>
 
-          <button
-            onClick={() => googleLogin()}
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          <div
+            onClick={() => {if(!loading) googleLogin()}}
+            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed cursor-pointer disabled:opacity-60"
           >
             {!loading && (
               <img
@@ -124,7 +123,7 @@ const LoginPage = () => {
               />
             )}
             {loading ? 'Connexion...' : 'Continuer avec Google'}
-          </button>
+          </div>
         </form>
       </AuthContainer>
     </div>
