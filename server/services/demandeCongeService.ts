@@ -168,7 +168,6 @@ export async function getProfilUtilisateurResume(user: IUtilisateur) {
     id: user._id,
     nom: user.nom,
     email: user.email,
-    genre: user.genre,
     role: user.role,
     isActive: user.isActive,
     nbJour: user.soldeConge,
@@ -178,4 +177,12 @@ export async function getProfilUtilisateurResume(user: IUtilisateur) {
     statsParType,
     dernieresDemandes
   };
+}
+
+
+export const getStatsDashboard = async () => {
+  const statsByStatut = await DemandeRepository.countByStatut();
+  const statsByType = await DemandeRepository.countByType();
+
+  return { statsByStatut, statsByType };
 }

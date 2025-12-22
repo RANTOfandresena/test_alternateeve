@@ -4,7 +4,6 @@ export interface UtilisateurDto {
   _id: string;
   nom: string;
   email: string;
-  genre: string;
   role: string;
   isActive: boolean;
   soldeConge: number;

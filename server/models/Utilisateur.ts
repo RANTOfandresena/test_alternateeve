@@ -5,17 +5,12 @@ export enum Role {
   EMPLOYE = 'EMPLOYE',
   MANAGER = 'MANAGER',
 }
-export enum Genre {
-  MASCULIN = 'MASCULIN',
-  FEMININ = 'FEMININ',
-}
 
 // Utilisateur
 export interface IUtilisateur extends Document {
   nom: string;
   email: string;
   motDePasse: string;
-  genre: Genre;
   role: Role;
   isActive: boolean;
   soldeConge: number;
@@ -31,17 +26,16 @@ const UtilisateurSchema = new Schema<IUtilisateur, UtilisateurModel>({
   nom: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   motDePasse: { type: String},
-  genre: { type: String, enum: Object.values(Genre),default: Genre.MASCULIN, required: true },
   role: { type: String, enum: Object.values(Role), required: true },
   isActive: { type: Boolean, default: false },
   soldeConge: { type: Number, default: 30 }
 });
 
-// UtilisateurSchema.pre('save', async function (this: HydratedDocument<IUtilisateur>) {
-//   if (!this.isModified('motDePasse')) return;
-//   const salt = await bcrypt.genSalt(10);
-//   this.motDePasse = await bcrypt.hash(this.motDePasse, salt);
-// });
+UtilisateurSchema.pre('save', async function (this: HydratedDocument<IUtilisateur>) {
+  if (!this.isModified('motDePasse') || !this.motDePasse) return;
+  const salt = await bcrypt.genSalt(10);
+  this.motDePasse = await bcrypt.hash(this.motDePasse, salt);
+});
 
 UtilisateurSchema.set('toJSON', {
   transform: (_doc, ret) => {

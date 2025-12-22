@@ -18,7 +18,6 @@ export type IUtilisateur = {
   _id: string;
   nom: string;
   email: string;
-  genre: string;
   role: string;
   isActive: boolean;
 }

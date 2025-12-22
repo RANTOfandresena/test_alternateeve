@@ -1,3 +1,4 @@
+import type { IUtilisateur } from "../../components/layout/DetailCongeList";
 import type { GetUsersResponse } from "../../utils/type";
 import api from "../axiosInstance";
 import type { DemandeCongeItem } from "../demandeConge";
@@ -9,11 +10,15 @@ type GetUsersParams = {
   isActive?: boolean;
   search?: string;
 };
+export type UpdateUtilisateurDto = {
+  role: IUtilisateur["role"];
+  isActive: boolean;
+  soldeConge: number;
+};
 export interface ProfilUtilisateur {
   id: string;
   nom: string;
   email: string;
-  genre: 'MASCULIN' | 'FEMININ';
   role: 'EMPLOYE' | 'MANAGER';
   isActive: boolean;
   nbJour: number;
@@ -46,5 +51,9 @@ export const fetchUsersFromIds = async (ids: string[]) => {
 
 export const getProfilUtilisateur = async (): Promise<ProfilUtilisateur> => {
   const { data } = await api.get('utilisateur/me');
+  return data;
+}
+export const updateUtilisateur = async (id: string, update: UpdateUtilisateurDto) => {
+  const {data} = await api.patch('utilisateur/'+id,{update})
   return data;
 }

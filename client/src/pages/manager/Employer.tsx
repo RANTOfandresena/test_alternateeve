@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Repeat, User, UserPlus } from "lucide-react";
-import { getAllUsers, updateUserRole } from "../../api/utilisateur/utilisateur";
+import { getAllUsers, updateUserRole, updateUtilisateur, type UpdateUtilisateurDto } from "../../api/utilisateur/utilisateur";
 import { DataTable } from "../../components/elements/DataTable";
 import type { UtilisateurDto } from "../../utils/type";
 import Modal from "../../components/elements/Modal";
@@ -39,6 +39,19 @@ const Employer = () => {
     }
     
   };
+  const handeUpdate = async (data : UpdateUtilisateurDto) =>{
+    if(!selectedUser?._id) return
+    try{
+      setLoading(true)
+      await updateUtilisateur(selectedUser?._id, data)
+      fetchUsers(page, isActiveFilter)
+    } catch(e){
+      console.log(e)
+    }finally{
+      setLoading(false)
+    }
+  }
+
 
   const fetchUsers = async (page: number, isActive?: boolean) => {
     setLoading(true);
@@ -89,9 +102,7 @@ const Employer = () => {
         open={modalOpen}
         utilisateur={selectedUser}
         onClose={() => setModalOpen(false)}
-        onSave={(data) => {
-          console.log("DATA À SAUVER :", data);
-        }}
+        onSave={handeUpdate}
       />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Employés</h1>
@@ -121,4 +132,3 @@ const Employer = () => {
 };
 
 export default Employer;
-

@@ -1,19 +1,30 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContainer from '../components/AuthContainer';
-import { registerUser } from '../features/authSlice';
+import { clearAuthMessages, registerUser } from '../features/authSlice';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 
 const RegisterPage = () => {
   const dispatch = useAppDispatch();
   const { loading, error, message } = useAppSelector((state) => state.auth);
-  const [form, setForm] = useState({ nom: '', email: '', motDePasse: '',genre:'MASCULIN', role: 'EMPLOYE' });
+  const [form, setForm] = useState({ nom: '', email: '', motDePasse: '', confirmMotDePasse: ''});
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(registerUser(form));
+    if (form.motDePasse !== form.confirmMotDePasse) {
+      setPasswordError("Les mots de passe ne correspondent pas");
+      return;
+    }
+    setPasswordError(null);
+    const { confirmMotDePasse, ...payload } = form;
+    dispatch(registerUser(payload));
   };
+
+  useEffect(() => {
+    dispatch(clearAuthMessages());
+  }, [dispatch]);
 
   return (
     <div className="flex justify-center px-4 py-12">
@@ -34,6 +45,7 @@ const RegisterPage = () => {
         }
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Nom */}
           <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
             Nom
             <input
@@ -46,6 +58,7 @@ const RegisterPage = () => {
             />
           </label>
 
+          {/* Email */}
           <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
             Email
             <input
@@ -57,18 +70,8 @@ const RegisterPage = () => {
               className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </label>
-          <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
-            Genre
-            <select
-              value={form.genre}
-              onChange={(e) => setForm({ ...form, genre: e.target.value })}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            >
-              <option value="MASCULIN">Homme</option>
-              <option value="FEMININ">Femme</option>
-            </select>
-          </label>
 
+          {/* Mot de passe */}
           <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
             Mot de passe
             <input
@@ -81,18 +84,23 @@ const RegisterPage = () => {
             />
           </label>
 
+          {/* Confirmation mot de passe */}
           <label className="flex flex-col gap-2 text-sm font-semibold text-slate-800">
-            Rôle
-            <select
-              value={form.role}
-              onChange={(e) => setForm({ ...form, role: e.target.value })}
+            Confirmer le mot de passe
+            <input
+              type="password"
+              required
+              value={form.confirmMotDePasse}
+              onChange={(e) => setForm({ ...form, confirmMotDePasse: e.target.value })}
+              placeholder="••••••••"
               className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            >
-              <option value="EMPLOYE">Employé</option>
-              <option value="MANAGER">Manager</option>
-            </select>
+            />
           </label>
 
+          {/* Erreurs */}
+          {passwordError && (
+            <p className="rounded-xl bg-red-50 text-red-700 px-3 py-2 text-sm">{passwordError}</p>
+          )}
           {error && (
             <p className="rounded-xl bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</p>
           )}
@@ -114,4 +122,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-

@@ -1,7 +1,8 @@
 import { Types } from "mongoose";
 import DemandeConge from "../models/DemandeConge";
-import { Utilisateur, IUtilisateur, Role, Genre } from "../models/Utilisateur";
+import { Utilisateur, IUtilisateur, Role } from "../models/Utilisateur";
 import dotenv from "dotenv";
+import { UpdateUtilisateurDto } from "../services/utilisateurService";
 
 dotenv.config();
 
@@ -9,7 +10,12 @@ export const trouverParEmail = (email: string) => {
   return Utilisateur.findOne({ email });
 };
 
-export const creerUtilisateur = (data: Partial<IUtilisateur>) => {
+export const creerUtilisateur = async (data: Partial<IUtilisateur>) => {
+  const existant = await Utilisateur.findOne({ email: data.email });
+  if (existant) {
+    throw new Error('Email déjà utilisé');
+  }
+
   const utilisateur = new Utilisateur(data);
   return utilisateur.save();
 };
@@ -26,8 +32,6 @@ export const findOrCreateByEmail = async (
       email,
       nom,
       motDePasse: null,
-      role: email === process.env.EMAIL_USER ? Role.MANAGER : Role.EMPLOYE,
-      genre: Genre.MASCULIN,
       isActive: email === process.env.EMAIL_USER
     });
   }
@@ -96,8 +100,6 @@ export const mettreAJourSoldeConge = async (
   if (!utilisateur) {
     throw new Error("Utilisateur introuvable");
   }
-  console.log("-----------------------------------------------")
-  console.log("encien:",utilisateur.soldeConge,"delta:",delta)
   const nouveauSolde = utilisateur.soldeConge + delta;
 
   if (nouveauSolde < 0) {
@@ -106,12 +108,10 @@ export const mettreAJourSoldeConge = async (
 
   utilisateur.soldeConge = nouveauSolde;
   await utilisateur.save();
-  console.log("nouveauSolde:",utilisateur.soldeConge)
-  console.log("---------------------------------------------")
   return utilisateur.soldeConge;
 };
 
-export const updateUtilisateurById = (id: string,  data: IUtilisateur) => {
+export const updateUtilisateurById = (id: string,  data: UpdateUtilisateurDto) => {
   return Utilisateur.findByIdAndUpdate(
     id,
     {

@@ -81,3 +81,13 @@ export const deleteDemandeConge = async (
     res.status(403).json({ message: e.message });
   }
 };
+
+export const getDashboardStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await DemandeService.getStatsDashboard();
+    res.json(stats);
+  } catch (error) {
+    console.error("Erreur récupération stats dashboard:", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};

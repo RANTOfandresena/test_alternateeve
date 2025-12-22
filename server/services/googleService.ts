@@ -28,6 +28,7 @@ export const login = async (code: string) => {
       payload.email,
       payload.name
     );
+    if (!utilisateur.isActive) throw new Error("Le compte n'est pas actif. Veuillez contacter l'administrateur.");
 
     const token = jwt.sign({ id: utilisateur._id }, JWT_SECRET);
 

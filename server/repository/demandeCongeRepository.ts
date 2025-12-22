@@ -2,7 +2,8 @@ import { Types } from "mongoose";
 import DemandeConge, {
   DemandeCongeInput,
   IDemandeConge,
-  StatutDemande
+  StatutDemande,
+  TypeConge
 } from "../models/DemandeConge";
 import * as UtilisateurRepository from "./utilisateurRepository";
 
@@ -148,4 +149,22 @@ export async function getDemandesByUserId(
     .sort({ dateCreation: -1 });
 
   return normaliserListe(demandes);
+}
+
+
+export const countByStatut= async (): Promise<Record<string, number>> => {
+  const pending = await DemandeConge.countDocuments({ statut: StatutDemande.EN_ATTENTE });
+  const accepted = await DemandeConge.countDocuments({ statut: StatutDemande.ACCEPTE });
+  const refused = await DemandeConge.countDocuments({ statut: StatutDemande.REFUSE });
+  const total = await DemandeConge.countDocuments();
+
+  return { pending, accepted, refused, total };
+}
+
+export const countByType= async (): Promise<Record<string, number>> => {
+  const vacances = await DemandeConge.countDocuments({ type: TypeConge.VACANCES });
+  const maladie = await DemandeConge.countDocuments({ type: TypeConge.MALADIE });
+  const absence = await DemandeConge.countDocuments({ type: TypeConge.ABSENCE });
+
+  return { VACANCES: vacances, MALADIE: maladie, ABSENCE: absence };
 }

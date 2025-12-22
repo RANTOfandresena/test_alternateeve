@@ -9,6 +9,7 @@ import {
   refuserDemande,
   updateDemande,
   deleteDemandeConge,
+  getDashboardStats,
 } from '../controllers/demandeCongeController';
 
 const router = Router();
@@ -33,5 +34,8 @@ router.patch("/:id", requireAuth, updateDemande);
 
 //suppression demande
 router.delete("/:id",requireAuth, deleteDemandeConge);
+
+router.get("/dashboard-stats", requireAuth, requireRole(Role.MANAGER), getDashboardStats);
+
 
 export default router;

@@ -52,11 +52,6 @@ const AppNav: React.FC<Props> = ({ isLoggedIn, isPageManager, roleUser, changePa
             <User size={18} />
             Profil
           </NavLink>)}
-
-          <NavLink to={`/${type}/regle`} className={linkClass}>
-            <Settings size={18} />
-            Règles de congé
-          </NavLink>
         </div>
 
         

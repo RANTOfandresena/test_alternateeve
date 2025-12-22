@@ -7,7 +7,7 @@ import PageLoader from './components/elements/PageLoader';
 const RegisterPage = lazy(() => import('./pages/Register'));
 const HomePageEmploye = lazy(() => import('./pages/employe/RouterEmploye'));
 const HomePageManager = lazy(() => import('./pages/manager/RouterManager'));
-const GoogleAuth = lazy(() => import('./pages/GoogleAuth'));
+const LoginPage = lazy(() => import('./pages/Login'));
 
 const App = () => {
   const { isLoggedIn, isPageManager } = useAppSelector((state) => state.auth);
@@ -48,7 +48,7 @@ const App = () => {
           path="/login"
           element={
             <RouteGuard isAllowed={!isLoggedIn} redirectTo="/">
-              <GoogleAuth />
+              <LoginPage />
             </RouteGuard>
           }
         />

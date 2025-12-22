@@ -32,6 +32,20 @@ export type DemandeCongeItem = {
   dateCreation?: string;
   employeId?: Employe;
 };
+export interface DashboardStats {
+  statsByStatut: {
+    pending: number;
+    accepted: number;
+    refused: number;
+    total: number;
+  };
+  statsByType: {
+    VACANCES: number;
+    MALADIE: number;
+    ABSENCE: number;
+  };
+}
+
 type UpdateDemandeResponse = {
   message: string;
   updatedDemande: DemandeCongeItem;
@@ -76,4 +90,10 @@ export const updateDemandeConge = async (
 
 export const deleteDemandeConge = async (id: string): Promise<void> => {
   await api.delete(`/demande-conge/${id}`);
+};
+
+
+export const getDashboardStats = async (): Promise<DashboardStats> => {
+  const {data} = await api.get<DashboardStats>("/demande-conge/dashboard-stats");
+  return data;
 };

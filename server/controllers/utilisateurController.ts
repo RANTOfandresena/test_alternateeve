@@ -69,3 +69,19 @@ export async function getProfilController(req: Request, res: Response) {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 }
+
+export const updateUtilisateurController = async (req: Request,res: Response) => {
+  try {
+    const { id } = req.params;
+    const { role, isActive, soldeConge } = req.body.update;
+    const utilisateur = await UtilisateurService.updateUtilisateur(id, {
+      role,
+      isActive,
+      soldeConge,
+    });
+
+    return res.status(200).json(utilisateur);
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message });
+  }
+};

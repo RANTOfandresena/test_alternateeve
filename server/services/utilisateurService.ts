@@ -1,16 +1,25 @@
 import jwt from "jsonwebtoken";
-import { Role, IUtilisateur, Genre } from "../models/Utilisateur";
+import { Role, IUtilisateur } from "../models/Utilisateur";
 import * as UtilisateurRepository from "../repository/utilisateurRepository";
 import { FiltreUtilisateur } from "../repository/utilisateurRepository";
 
 const JWT_SECRET = process.env.JWT_SECRET || "cle";
 
+export type UpdateUtilisateurDto = {
+  role: IUtilisateur["role"];
+  isActive: boolean;
+  soldeConge: number;
+};
+
 export const login = async (email: string, motDePasse: string) => {
   const utilisateur = await UtilisateurRepository.trouverParEmail(email);
+
   if (!utilisateur) throw new Error("Email ou mot de passe incorrect");
 
   const isMatch = await utilisateur.comparePassword(motDePasse);
   if (!isMatch) throw new Error("Email ou mot de passe incorrect");
+
+  if (!utilisateur.isActive) throw new Error("Le compte n'est pas actif. Veuillez contacter l'administrateur.");
 
   const token = jwt.sign({ id: utilisateur._id }, JWT_SECRET, { expiresIn: "24h" });
 
@@ -24,15 +33,12 @@ export const register = async (data: {
   nom: string;
   email: string;
   motDePasse: string;
-  role?: Role;
-  genre: string;
 }) => {
   const utilisateur = await UtilisateurRepository.creerUtilisateur({
     nom: data.nom,
     email: data.email,
-    genre: data.genre as Genre,
     motDePasse: data.motDePasse,
-    role: data.role as Role ?? Role.EMPLOYE,
+    role: Role.EMPLOYE,
   });
 
   return { message: "Utilisateur créé !", utilisateur };
@@ -71,17 +77,17 @@ export const getUsersFromIds= async (id_users: string[]): Promise<IUtilisateur[]
 
 export const updateUtilisateur = async (
   id: string,
-  data: IUtilisateur
+  data: UpdateUtilisateurDto
 ) => {
   if (data.soldeConge < 0) {
     throw new Error("Le solde de congé ne peut pas être négatif");
   }
 
+
   const utilisateur = await UtilisateurRepository.updateUtilisateurById(
     id,
     data
   );
-
   if (!utilisateur) {
     throw new Error("Utilisateur introuvable");
   }

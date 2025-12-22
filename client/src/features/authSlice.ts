@@ -1,11 +1,10 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import { login, register, type RegisterPayload } from '../api/auth';
+import { login, loginGoogle, register, type RegisterPayload } from '../api/auth';
 
 export interface UserInfo {
   id: string;
   nom: string;
   email: string;
-  genre: string;
   role: string;
 }
 interface User {
@@ -31,14 +30,27 @@ const initialState: AuthState = {
   message: null,
 };
 
+// authSlice.ts
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: string, { rejectWithValue }) => {
+  async (credentials: { email: string; motDePasse: string }, { rejectWithValue }) => {
     try {
       const data = await login(credentials);
       return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Erreur de connexion');
+    }
+  }
+);
+
+export const loginGoogleUser = createAsyncThunk(
+  'auth/loginGoogleUser',
+  async (code: string, { rejectWithValue }) => {
+    try {
+      const data = await loginGoogle(code);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || 'Erreur de connexion Google');
     }
   }
 );
@@ -68,6 +80,10 @@ const authSlice = createSlice({
     },
     changePage: (state) => {
       state.isPageManager = state.user?.user.role === "MANAGER" && !state.isPageManager
+    },
+    clearAuthMessages: (state)=>{
+      state.error = null;
+      state.message = null;
     }
   },
   extraReducers: (builder) => {
@@ -104,5 +120,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, changePage } = authSlice.actions;
+export const { logout, changePage,clearAuthMessages } = authSlice.actions;
 export default authSlice.reducer;
