@@ -32,10 +32,12 @@ export const recupererDemandes = async (params: any) => {
   } else if (excludeRefuse) {
     filter.statut = { $ne: StatutDemande.REFUSE };
   }
+  console.log("employeId:", employeId,typeof employeId);
 
   if (employeId) {
-    filter.employeId = employeId;
+    filter.employeId = typeof employeId === "string" ? new Types.ObjectId(employeId) : new Types.ObjectId(employeId._id);
   }
+  
   if(type){
     filter.type = type
   }

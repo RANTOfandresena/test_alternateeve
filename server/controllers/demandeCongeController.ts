@@ -20,7 +20,7 @@ export const createDemande = async (req: Request, res: Response) => {
 export const getMyDemandes = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const demandes = await DemandeService.recupererDemandes({...req.query,employeId : user.employeId});
+    const demandes = await DemandeService.recupererDemandes({...req.query,employeId : user._id});
     res.json(demandes);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
