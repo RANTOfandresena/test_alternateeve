@@ -10,6 +10,7 @@ import { normalize } from "./elements/CalendrierConge";
 import Legend from "./elements/Legend";
 import { CalendarDays, Clock } from "lucide-react";
 import { getProfilUtilisateur } from "../api/utilisateur/utilisateur";
+import { toast } from "react-toastify";
 
 type LeaveType = DemandeCongePayload["type"];
 
@@ -65,8 +66,12 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     try {
       const data = await getProfilUtilisateur();
       setSolde(data.nbJour);
-    } catch (e) {
-      console.log("Erreur", e);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(
+        e?.response?.data?.message ||
+          "Erreur lors du chargement"
+      );
     } finally {
       setLoading(false);
     }
@@ -113,17 +118,25 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
   };
   useEffect(() => {
     const loadJoursFeries = async () => {
-      const currentYear = new Date().getFullYear();
-      const nextYear = currentYear + 1;
-      const dataCurrent = await getJoursFeriesByYear(currentYear.toString());
-      const dataNext = await getJoursFeriesByYear(nextYear.toString());
+      try {
+        const currentYear = new Date().getFullYear();
+        const nextYear = currentYear + 1;
 
-      const allFeries = [...dataCurrent, ...dataNext].map(j => {
-        const d = new Date(j.date);
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      });
-      setJourFerie(allFeries);
-      
+        const dataCurrent = await getJoursFeriesByYear(currentYear.toString());
+        const dataNext = await getJoursFeriesByYear(nextYear.toString());
+
+        const allFeries = [...dataCurrent, ...dataNext].map(j => {
+          const d = new Date(j.date);
+          return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        });
+
+        setJourFerie(allFeries);
+      } catch (err: any) {
+        console.error(err);
+        toast.error(
+          err?.response?.data?.message || "Erreur lors du chargement des jours fériés"
+        );
+      }
     };
 
     loadJoursFeries();
@@ -190,7 +203,8 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
       if (isCreateMode) setForm(initialState);
     } catch(e) {
       console.log(e)
-      setError("Erreur lors de l'enregistrement");
+      // setError("Erreur lors de l'enregistrement");
+      toast.error("Erreur lors de l'enregistrement");
     } finally {
       setLoading(false);
     }

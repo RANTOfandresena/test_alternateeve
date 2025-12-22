@@ -4,6 +4,7 @@ import { deleteDemandeConge, getAllDemandesConge, type DemandeCongeItem } from "
 import DetailCongeList from "../../components/layout/DetailCongeList";
 import PanelContainer from "../../components/layout/PannelContainner";
 import { userInDate } from "../../utils/date";
+import { toast } from "react-toastify";
 
 const Calendrier = () => {
   const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
@@ -14,7 +15,6 @@ const Calendrier = () => {
   const dateSelected = (date: Date) => {
     setSelectedDate(date);
     const matched = userInDate(date,demandes)
-    console.log(matched)
     setMatchedConges(matched);
     setOpenPannel(true)
   };
@@ -28,22 +28,44 @@ const Calendrier = () => {
   };
 
   useEffect(() => {
-    getAllDemandesConge().then(setDemandes);
+    const fetchDemandes = async () => {
+      try {
+        const data = await getAllDemandesConge();
+        setDemandes(data);
+      } catch (err: any) {
+        console.error(err);
+        toast.error(
+          err?.response?.data?.message ||
+            "Erreur lors du chargement des demandes"
+        );
+      }
+    };
+
+    fetchDemandes();
   }, []);
-  const deleteDemande = async ( selectCongeId: string ) =>{
-    try{
+  const deleteDemande = async (selectCongeId: string) => {
+    try {
       await deleteDemandeConge(selectCongeId);
-      setDemandes((prev) => {
-          return prev.filter((p) => p._id !== selectCongeId);
-      });
-      setMatchedConges((prev) => {
-          return prev.filter((p) => p._id !== selectCongeId);
-      })
-      return true
-    } catch{
-      return false
+
+      setDemandes(prev =>
+        prev.filter(p => p._id !== selectCongeId)
+      );
+
+      setMatchedConges(prev =>
+        prev.filter(p => p._id !== selectCongeId)
+      );
+
+      toast.success("Demande de congé supprimée avec succès");
+      return true;
+    } catch (error: any) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message ||
+          "Erreur lors de la suppression de la demande"
+      );
+      return false;
     }
-  }
+  };
   return (
     <div className="flex gap-6">
       {/* Calendrier */}

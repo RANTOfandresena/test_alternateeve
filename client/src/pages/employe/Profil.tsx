@@ -3,6 +3,7 @@ import PageLoader from "../../components/elements/PageLoader";
 import { useState, useEffect } from "react";
 import { getProfilUtilisateur, type ProfilUtilisateur } from "../../api/utilisateur/utilisateur";
 import { User, Mail, Calendar, AlertCircle, TrendingUp, CheckCircle, Clock, FileText } from "lucide-react";
+import { toast } from "react-toastify";
 
 const Profil = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -16,8 +17,12 @@ const Profil = () => {
       try {
         const data = await getProfilUtilisateur();
         setProfil(data);
-      } catch (e) {
-        console.log("Erreur", e);
+      } catch (e: any) {
+        console.error(e);
+        toast.error(
+          e?.response?.data?.message ||
+            "Erreur lors du chargement du profil"
+        );
       } finally {
         setLoading(false);
       }

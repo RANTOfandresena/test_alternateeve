@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { accepterDemandeConge, getAllDemandesConge, refuserDemandeConge, type DemandeCongeItem} from '../../api/demandeConge';
 import DemandeCongeList from '../../components/DemandeCongeList';
 import FiltreDemandesConge from '../../components/elements/FiltreDemandesConge';
+import { toast } from 'react-toastify';
 
 const Demande = () => {
   const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
@@ -14,7 +15,11 @@ const Demande = () => {
       const data = await getAllDemandesConge(params);
       setDemandes(data);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Impossible de récupérer les demandes.');
+      console.error(err);
+      toast.error(
+        err?.response?.data?.message ||
+          "Impossible de récupérer les demandes."
+      );
     } finally {
       setLoading(false);
     }
@@ -26,10 +31,17 @@ const Demande = () => {
   const handleAccepter = async (id: string) => {
     try {
       const updated = await accepterDemandeConge(id);
-      setDemandes((prev) => prev.map((it) => (it._id === updated._id ? updated : it)));
+      setDemandes(prev =>
+        prev.map(it => (it._id === updated._id ? updated : it))
+      );
+      toast.success("Demande de congé acceptée");
       return updated;
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erreur lors de l\'acceptation');
+      console.error(err);
+      toast.error(
+        err?.response?.data?.message ||
+          "Erreur lors de l'acceptation de la demande"
+      );
       throw err;
     }
   };
@@ -37,10 +49,17 @@ const Demande = () => {
   const handleRefuser = async (id: string) => {
     try {
       const updated = await refuserDemandeConge(id);
-      setDemandes((prev) => prev.map((it) => (it._id === updated._id ? updated : it)));
+      setDemandes(prev =>
+        prev.map(it => (it._id === updated._id ? updated : it))
+      );
+      toast.success("Demande de congé refusée");
       return updated;
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erreur lors du refus');
+      console.error(err);
+      toast.error(
+        err?.response?.data?.message ||
+          "Erreur lors du refus de la demande"
+      );
       throw err;
     }
   };

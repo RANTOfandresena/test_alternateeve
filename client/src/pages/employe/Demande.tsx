@@ -5,6 +5,7 @@ import FiltreDemandesConge from "../../components/elements/FiltreDemandesConge";
 import { Plus } from "lucide-react";
 import Modal from "../../components/elements/Modal";
 import DemandeCongeForm from "../../components/DemandeCongeForm";
+import { toast } from "react-toastify";
 
 const Demande = () => {
     const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
@@ -12,48 +13,78 @@ const Demande = () => {
     const [error, setError] = useState<string | null>(null);
     const [openModal, setOpenModal] = useState(false);
     const chargerDemandes = async (params = {}) => {
-        try {
-            const data = await getAllDemandesCongeFiltre(params);
-            setDemandes(data);
-        } catch (err: any) {
-            setError(err?.response?.data?.message || 'Erreur de chargement');
-        } finally {
-            setLoading(false);
-        }
+    try {
+        const data = await getAllDemandesCongeFiltre(params);
+        setDemandes(data);
+    } catch (err: any) {
+        toast.error(
+        err?.response?.data?.message || "Erreur de chargement des demandes"
+        );
+    } finally {
+        setLoading(false);
+    }
     };
     const creerDemande = async (payload: DemandeCongeItem) => {
+    try {
         const response = await creerDemandeConge(payload);
+
         setDemandes((prev) => [response, ...prev]);
         setOpenModal(false);
+
+        toast.success("Demande de congé créée avec succès");
         return response;
-    };
-    const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
-        if (!data._id) throw new Error("ID manquant");
-
-        const response = await updateDemandeConge(data._id, data);
-        if (!response) throw new Error("Impossible de mettre à jour la demande");
-
-        setDemandes(prev =>
-            prev.map(d =>
-                d._id === response._id
-                    ? response
-                    : d
-            )
+    } catch (error: any) {
+        toast.error(
+        error?.response?.data?.message ||
+            "Erreur lors de la création de la demande"
         );
-
-        return response;
-    };
-    const deleteDemande = async ( selectCongeId: string ) =>{
-        try{
-            await deleteDemandeConge(selectCongeId);
-            setDemandes((prev) => {
-                return prev.filter((p) => p._id !== selectCongeId);
-            });
-            return true
-        } catch{
-            return false
-        }
+        throw error;
     }
+    };
+    const saveConge = async (
+    data: DemandeCongeItem
+    ): Promise<DemandeCongeItem> => {
+        try {
+            if (!data._id) throw new Error("ID manquant");
+
+            const response = await updateDemandeConge(data._id, data);
+            if (!response) throw new Error("Impossible de mettre à jour la demande");
+
+            setDemandes(prev =>
+            prev.map(d =>
+                d._id === response._id ? response : d
+            )
+            );
+
+            toast.success("Demande de congé mise à jour avec succès");
+            return response;
+        } catch (error: any) {
+            toast.error(
+            error?.response?.data?.message ||
+                error.message ||
+                "Erreur lors de la mise à jour de la demande"
+            );
+            throw error;
+        }
+    };
+    const deleteDemande = async (selectCongeId: string) => {
+        try {
+            await deleteDemandeConge(selectCongeId);
+
+            setDemandes(prev =>
+            prev.filter(p => p._id !== selectCongeId)
+            );
+
+            toast.success("Demande de congé supprimée avec succès");
+            return true;
+        } catch (error: any) {
+            toast.error(
+            error?.response?.data?.message ||
+                "Erreur lors de la suppression de la demande"
+            );
+            return false;
+        }
+    };
 
     useEffect(() => {
         chargerDemandes();

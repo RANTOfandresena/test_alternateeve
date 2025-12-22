@@ -6,6 +6,7 @@ import Modal from "../elements/Modal";
 import PageLoader from "../elements/PageLoader";
 import DemandeCongeForm from "../DemandeCongeForm";
 import { useAppSelector } from "../../hooks/hooks";
+import { toast } from "react-toastify";
 
 type DetailsCongeProps = {
   date: Date | null;
@@ -33,21 +34,33 @@ const DetailCongeList = ({ date, conges, onUpdate, onDeleteDemande}: DetailsCong
   const [openModal,setOpenModal] = useState(false)
   const [selectConge,setSelectConge] = useState<DemandeCongeItem | undefined>(undefined)
 
-  const saveConge = async (data: DemandeCongeItem): Promise<DemandeCongeItem> => {
-    let response;
-    if( isPageManager ){
-      if(data.statut === "ACCEPTE"){
-        response = await accepterDemandeConge(data._id!)
-      } else {
-        response = await refuserDemandeConge(data._id!)
-      }      
-    }else{
-      response = await updateDemandeConge(data._id!,data)
-    }
+  const saveConge = async (
+    data: DemandeCongeItem
+  ): Promise<DemandeCongeItem> => {
+    try {
+      let response;
 
-    onUpdate(response)
-    setOpenModal(false)
-    return response
+      if (isPageManager) {
+        if (data.statut === "ACCEPTE") {
+          response = await accepterDemandeConge(data._id!);
+          toast.success("Demande de congé acceptée");
+        } else {
+          response = await refuserDemandeConge(data._id!);
+          toast.success("Demande de congé refusée");
+        }
+      } else {
+        response = await updateDemandeConge(data._id!, data);
+        toast.success("Demande de congé mise à jour");
+      }
+
+      onUpdate(response);
+      setOpenModal(false);
+      return response;
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors de l'enregistrement de la demande");
+      throw error; 
+    }
   };
   const openModalEditConge = (conge: DemandeCongeItem)=>{
     setSelectConge(conge)

@@ -4,6 +4,7 @@ import { deleteDemandeConge, getMesDemandesConge, type DemandeCongeItem } from "
 import DetailCongeList from "../../components/layout/DetailCongeList";
 import PanelContainer from "../../components/layout/PannelContainner";
 import { userInDate } from "../../utils/date";
+import { toast } from "react-toastify";
 
 const Calendrier = () => {
   const [demandes, setDemandes] = useState<DemandeCongeItem[]>([]);
@@ -27,22 +28,39 @@ const Calendrier = () => {
   };
 
   useEffect(() => {
-    getMesDemandesConge().then(setDemandes);
+    const fetchDemandes = async () => {
+      try {
+        const data = await getMesDemandesConge();
+        setDemandes(data);
+      } catch (err) {
+        console.error(err);
+        toast.error("Impossible de récupérer les demandes de congé.");
+      }
+    };
+
+    fetchDemandes();
   }, []);
-  const deleteDemande = async ( selectCongeId: string ) =>{
-    try{
+
+  const deleteDemande = async (selectCongeId: string) => {
+    try {
       await deleteDemandeConge(selectCongeId);
-      setDemandes((prev) => {
-          return prev.filter((p) => p._id !== selectCongeId);
-      });
-      setMatchedConges((prev) => {
-          return prev.filter((p) => p._id !== selectCongeId);
-      })
-      return true
-    } catch{
-      return false
+
+      setDemandes((prev) =>
+        prev.filter((p) => p._id !== selectCongeId)
+      );
+
+      setMatchedConges((prev) =>
+        prev.filter((p) => p._id !== selectCongeId)
+      );
+
+      toast.success("Demande de congé supprimée avec succès");
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors de la suppression de la demande");
+      return false;
     }
-  }
+  };
 
   return (
     <div className="flex gap-6">

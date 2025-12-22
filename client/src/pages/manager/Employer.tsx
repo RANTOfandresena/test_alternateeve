@@ -7,6 +7,7 @@ import Modal from "../../components/elements/Modal";
 import { UserRoleForm } from "../../components/UserRoleForm";
 import ProfilUser from "../ProfilUser";
 import UtilisateurModal from "../../components/UtilisateurModal";
+import { toast } from "react-toastify";
 
 type Column<T> = {
   key: keyof T | "action";
@@ -39,18 +40,24 @@ const Employer = () => {
     }
     
   };
-  const handeUpdate = async (data : UpdateUtilisateurDto) =>{
-    if(!selectedUser?._id) return
-    try{
-      setLoading(true)
-      await updateUtilisateur(selectedUser?._id, data)
-      fetchUsers(page, isActiveFilter)
-    } catch(e){
-      console.log(e)
-    }finally{
-      setLoading(false)
+  const handeUpdate = async (data: UpdateUtilisateurDto) => {
+    if (!selectedUser?._id) return;
+
+    try {
+      setLoading(true);
+      await updateUtilisateur(selectedUser._id, data);
+      fetchUsers(page, isActiveFilter);
+      toast.success("Utilisateur mis à jour avec succès");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(
+        e?.response?.data?.message ||
+          "Erreur lors de la mise à jour de l'utilisateur"
+      );
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
 
   const fetchUsers = async (page: number, isActive?: boolean) => {
@@ -59,6 +66,12 @@ const Employer = () => {
       const result = await getAllUsers({ page, limit: 5, isActive });
       setData(result.data);
       setTotalPages(result.pagination.totalPages);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        err?.response?.data?.message ||
+          "Erreur lors du chargement des utilisateurs"
+      );
     } finally {
       setLoading(false);
     }
