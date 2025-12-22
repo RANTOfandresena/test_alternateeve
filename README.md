@@ -37,7 +37,7 @@ JWT_SECRET=YOUR_JWT_SECRET
 GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID # optionnel
 GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET # optionnel
 URL_CLIENT=http://localhost:5173
-EMAIL_USER=herimandrantofandresen@gmail.com #lors de l'inscription cette email est par defaut un MANAGER
+EMAIL_USER=herimandrantofandresen@gmail.com #lors de l'inscription sur l'app,cette email est par defaut un MANAGER
 ```
 Adapter les valeurs selon votre environnement (MongoDB Atlas, secrets, etc.). il y a une exemple dans le fichier `.exemple.env`
 
