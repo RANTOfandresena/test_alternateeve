@@ -65,7 +65,7 @@ npm install
 
 3. Créer ou mettre à jour `.env` pour Vite
 ```
-VITE_API_URL=http://localhost:3000
+REACT_APP_API_URL=http://localhost:3000
 ```
 
 4. Lancer en développement
