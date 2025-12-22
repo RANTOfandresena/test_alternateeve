@@ -85,5 +85,7 @@ Terminal B — frontend :
 ```
 cd client && npm run dev
 ```
-
+Pour voir l'architecture globale du projet, consultez les README dédiés :
+- Client : [client/README.md](client/README.md)
+- Serveur : [server/README.md](server/README.md)
 ---
