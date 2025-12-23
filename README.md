@@ -46,6 +46,7 @@ Adapter les valeurs selon votre environnement (MongoDB Atlas, secrets, etc.). il
 npm run dev
 ```
 Serveur par défaut : http://localhost:3000
+
 NB: le serveur express a besoin d'une connexion Internet pour récupérer les jours fériés
 
 Documentation Swagger : http://localhost:3000/api-docs/ (tous les endpoint)
