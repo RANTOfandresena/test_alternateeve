@@ -65,10 +65,6 @@ Ces composants sont conçus pour être réutilisables et découplés du business
 
 - Contient les slices du store (ex : `authSlice.ts`) — logique d'état centralisée (utilisateur, token, statuts, actions asynchrones).
 
-### `src/hooks/`
-
-- Hooks réutilisables personnalisés (`hooks.ts`) : ex. `useAuth`, `useDebounce`, `useFetch`.
-
 ### `src/pages/`
 
 - Pages routables de l'application :
