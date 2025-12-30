@@ -20,6 +20,7 @@ async function normaliserStatut(demande: IDemandeConge) {
     demande.dateDebut < new Date()
   ) {
     demande.statut = StatutDemande.REFUSE;
+    demande._ignoreSoldeCheck = true
     await demande.save();
 
     const employeId = (demande.employeId as EmployePeuple)._id;

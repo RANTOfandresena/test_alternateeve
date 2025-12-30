@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { fr } from "date-fns/locale";
-import { getMesDemandesConge, type DemandeCongeItem, type DemandeCongePayload } from "../api/demandeConge";
+import { getDemandesCongeToViewMode, getMesDemandesConge, type DemandeCongeItem, type DemandeCongePayload } from "../api/demandeConge";
 import { formatLocalDate, isPresentOrFutureString } from "../utils/date";
 import Modal from "./elements/Modal";
 import { getJoursFeriesByYear } from "../api/jourFerie";
@@ -227,7 +227,7 @@ const DemandeCongeForm = ({ isValidation = false, demande, onSubmit, onDeleteDem
     const params = `dateDu=${formatLocalDate(date)}&dateAu=${formatLocalDate(d)}&excludeRefuse=true`;
 
     if (!listParamsRef.current.has(params)) {
-      let demandesReponse = await getMesDemandesConge(params);
+      let demandesReponse = isViewMode ? await getDemandesCongeToViewMode(params) : await getMesDemandesConge(params);
       demandesReponse = demandesReponse.filter((dem) => dem.dateDebut !== demande?.dateDebut && dem.dateFin !== demande?.dateFin)
       setDemande(prev => [...prev, ...demandesReponse]);
 

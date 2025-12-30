@@ -29,6 +29,7 @@ export interface DemandeCongeInput {
 export interface IDemandeConge extends Document, DemandeCongeInput {
   nbJour:number;
   dateCreation: Date;
+  _ignoreSoldeCheck?: boolean;
 }
 
 
@@ -98,15 +99,17 @@ DemandeCongeSchema.pre<IDemandeConge>('save', async function () {
     }
     current.setDate(current.getDate() + 1);
   }
+  if(!this._ignoreSoldeCheck){
+    const employe = await Utilisateur.findById(this.employeId).lean();
+    if (!employe) {
+      throw new Error("Employé introuvable");
+    }
 
-  const employe = await Utilisateur.findById(this.employeId).lean();
-  if (!employe) {
-    throw new Error("Employé introuvable");
+    if (employe.soldeConge - count < 0) {
+      throw new Error("Solde de congé insuffisant");
+    }
   }
-
-  if (employe.soldeConge - count < 0) {
-    throw new Error("Solde de congé insuffisant");
-  }
+  this._ignoreSoldeCheck = false
 
   this.nbJour = count;
 });

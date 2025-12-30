@@ -60,6 +60,12 @@ export const getMesDemandesConge = async (params = '') => {
   const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me?' + params);
   return data;
 };
+
+export const getDemandesCongeToViewMode = async (params = '') => {
+  const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/?' + params);
+  return data;
+};
+
 export const getAllDemandesCongeFiltre = async (params?: DemandeCongeParams) => {
   const { data } = await api.get<DemandeCongeItem[]>('/demande-conge/me', { params });
   return data;
